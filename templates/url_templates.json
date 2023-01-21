@@ -1,0 +1,6 @@
+{
+    "oauth": {
+        "access_request": "http://www\\.strava\\.com/oauth/authorize?client\\_id\\=13782&response\\_type\\=code&redirect\\_uri\\=http://localhost/stravagramoauth?telegram_id={}&exchange\\_token&approval\\_prompt\\=force&scope\\=read\\_all",
+        "strava_oauth": "https://www.strava.com/api/v3/oauth/token"
+    }
+}

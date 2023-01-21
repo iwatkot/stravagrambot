@@ -1,0 +1,8 @@
+{
+    "en": {
+        "/start": "Hello, {}\\! You can use this bot to access your Strava data\\.\n*Powered by Strava*\\.",
+        "/auth": "Here's your auth link: [Connect with Strava]({})",
+        "NOT_FOUND_IN_DB": "The bot didn't find your Telegram ID in the database. Please authorize the bot again with comand /auth.",
+        "ERROR_WHILE_REFRESHING": "The bot can't update your Strava access token due to bad response from Stava API."
+    }
+}

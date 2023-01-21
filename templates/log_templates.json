@@ -1,0 +1,36 @@
+{
+    "log_formatter": "%(name)s | %(asctime)s | %(levelname)s | %(message)s",
+    "database_handler": {
+        "DB_INIT_TELEGRAM_ID": "The Database initiated with Telegram ID: [{}].",
+        "DB_INIT_AUTH_DATA": "The Database initiated with auth_data for Telegram ID: [{}].",
+        "CONNECTED": "Connection to the database is established for Telegram ID: [{}].",
+        "DISCONNECTED": "Connection to the database is closed for Telegram ID: [{}].",
+        "NO_CONNECTION": "Connection to the database has been tried to close while no active connection.",
+        "IN_DATABASE": "The Telegram ID: [{}] is already in database.",
+        "NOT_IN_DATABASE": "The Telegram ID: [{}] not in database.",
+        "DELETED_FROM_DATABASE": "The Telegram ID: [{}] deleted from database.",
+        "ADDED_TO_DATABASE": "The Telegram ID: [{}] added to database.",
+        "TOKEN_EXPIRED": "The access token for Telegram ID: [{}] is expired (or exparing in next 60 minutes).",
+        "TOKEN_NOT_EXPIRED": "The access token for Telegram ID [{}] isn't expired yet.",
+        "GETTING_TOKEN": "Getting [{}] from the database for Telegram ID: [{}].",
+        "TOKEN_REFRESHED": "The access token for Telegram ID: [{}] is successfully refreshed.",
+        "UPDATE_TOCKEN_FAILED": "The update of the token for Telegram ID: [{}] has failed due to bad API response.",
+        "NOT_CONNECTED": "The connection to the database wasn't established due to an error."
+    },
+    "flask_server": {
+        "SERVER_STARTED": "OAuth server successfully started. Listening on port [{}].",
+        "SERVER_STOPPED": "OAuth server stopped.",
+        "GET_REQUEST": "Recieved GET request to path: [{}].",
+        "PARSED_DATA": "Parsed data from request. Telegram ID: [{}], code: [{}], scope: [{}].",
+        "BAD_REQUEST": "Bad request recieved from Telegram ID: [{}].",
+        "GOOD_REQUEST": "Good request recieved from Telegram ID: [{}] with code: [{}].",
+        "OAUTH_FAILED": "OAuth failed due to None response from API.",
+        "NOT_CONNECTED": "The connection to the database wasn't established due to an error."
+    },
+    "token_handler": {
+        "TOKEN_INIT_CODE": "OAuth initiated for Telegram ID: [{}] with code: [{}].",
+        "TOKEN_INIT_REFRESH_TOKEN": "OAuth initiated for Telegram ID: [{}] with refresh token: [{}].",
+        "RESPONSE_FROM_API": "Recieved token exchange response from API for Telegram ID: [{}].",
+        "BAD_RESPONSE_FROM_API": "Recieved bad response from API for Telegram ID: [{}]."
+    }
+}

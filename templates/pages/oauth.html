@@ -1,0 +1,13 @@
+{% extends 'pages/base.html' %}
+{% block title %}Stravagram: {{ result }}{% endblock title %}
+{% block content  %}
+  <div class="content" style="width: 50%; margin: auto;">
+    <h1>{{ result }}</h1>
+    {% for line in message %}
+      <p>{{ line }}</p>
+    {% endfor %}
+    {% if result == 'Authentication failed' %}
+     <img src="static/oauth_guide.gif">
+    {% endif %}
+  </div>
+{% endblock content %}

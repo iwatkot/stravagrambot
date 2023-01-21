@@ -1,0 +1,7 @@
+{
+    "oauth": {
+        "good_request": ["Your request token was recieved successfully. You can close this window now."],
+        "bad_request": ["In order to work correctly the bot needs to see your private data.", "The authentication was failed due to not enough permissions.", "Initiate authentication process one more time and check all boxes on the Stava website."],
+        "oauth_marker": "/stravagramoauth"
+    }
+}
