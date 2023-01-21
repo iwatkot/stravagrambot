@@ -4,13 +4,15 @@ import sys
 
 from templates_handler import get_template
 
+absolute_path = os.path.dirname(__file__)
+
 try:
-    os.mkdir('./logs')
+    os.mkdir(os.path.join(absolute_path, 'logs'))
 except FileExistsError:
     pass
 
 LOG_FORMATTER = get_template('log_templates')['log_formatter']
-LOG_FILE = get_template('constants')['files']['log_file']
+LOG_FILE = os.path.join(absolute_path, 'logs/main_log.txt')
 
 
 class Logger(logging.getLoggerClass()):

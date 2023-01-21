@@ -15,7 +15,7 @@ logger = Logger(__name__)
 
 class DataBase:
     def __init__(self, auth_data=None, telegram_id=None):
-        self.user = config('USER')
+        self.user = config('PUSER')
         self.password = config('PASSWORD')
         self.host = config('HOST')
         self.port = config('PORT')
