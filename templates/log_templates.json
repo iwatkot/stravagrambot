@@ -14,8 +14,7 @@
         "TOKEN_NOT_EXPIRED": "The access token for Telegram ID [{}] isn't expired yet.",
         "GETTING_TOKEN": "Getting [{}] from the database for Telegram ID: [{}].",
         "TOKEN_REFRESHED": "The access token for Telegram ID: [{}] is successfully refreshed.",
-        "UPDATE_TOCKEN_FAILED": "The update of the token for Telegram ID: [{}] has failed due to bad API response.",
-        "NOT_CONNECTED": "The connection to the database wasn't established due to an error."
+        "CANT_CONNECT": "Failed to connect to the database."
     },
     "flask_server": {
         "SERVER_STARTED": "OAuth server successfully started. Listening on port [{}].",
@@ -25,12 +24,30 @@
         "BAD_REQUEST": "Bad request recieved from Telegram ID: [{}].",
         "GOOD_REQUEST": "Good request recieved from Telegram ID: [{}] with code: [{}].",
         "OAUTH_FAILED": "OAuth failed due to None response from API.",
-        "NOT_CONNECTED": "The connection to the database wasn't established due to an error."
+        "NOT_CONNECTED": "The connection to the database wasn't established due to an error.",
+        "RETURNING_HUB_CHALLENGE": "Server returning hub challenge [{}] to the API."
     },
     "token_handler": {
         "TOKEN_INIT_CODE": "OAuth initiated for Telegram ID: [{}] with code: [{}].",
         "TOKEN_INIT_REFRESH_TOKEN": "OAuth initiated for Telegram ID: [{}] with refresh token: [{}].",
         "RESPONSE_FROM_API": "Recieved token exchange response from API for Telegram ID: [{}].",
         "BAD_RESPONSE_FROM_API": "Recieved bad response from API for Telegram ID: [{}]."
+    },
+    "webhook_handler": {
+        "SUBSCRIBE_REQUESTED": "The bot requested subscription to the webhooks.",
+        "VIEW_REQUESTED": "The bot requested to view subscription.",
+        "DELETE_REQUESTED": "The bot requested to delete subscription.",
+        "SUB_DELETED": "Subscription to the webhooks successfully deleted.",
+        "API_RESPONDED": "Webhook API responded with: [{}].",
+        "SUBSCRIPTION_ID": "Webhook API returned subscription ID: [{}]." ,
+        "BAD_RESPONSE": "The API returned bad response: [{}]."
+    },
+    "api": {
+        "UPDATE_TOCKEN_FAILED": "The update of the token for Telegram ID: [{}] has failed due to bad API response.",
+        "INIT": "API caller initiated for Telegram ID: [{}].",
+        "NO_TOKEN": "Can't get the acccess token from the database for Telegram ID: [{}].",
+        "GET_STATS": "Calling the API with get_stats request for Telegram ID: [{}].",
+        "GOOD_RESPONSE": "Recieved good response from the API for Telegram ID: [{}].",
+        "BAD_RESPONSE": "Recieved bad response from the API for Telegram ID: [{}]."
     }
 }

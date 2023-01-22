@@ -2,6 +2,7 @@ import json
 import logging
 
 from flask import Flask, request, render_template
+from decouple import config
 
 from templates_handler import get_template
 from database_handler import DataBase
@@ -17,10 +18,27 @@ flask_log.disabled = True
 app = Flask(__name__)
 
 
-@app.route("/webhook")
-def webhook():
-    hub_challenge = request.args.get('hub.challenge')
-    return json.dumps({'hub.challenge': hub_challenge}), 200
+@app.route(OAUTH_TEMPLATES['webhooks_marker'], methods=["GET"])
+def webhook_challenge():
+    logger.debug(LOG_TEMPLATES['GET_REQUEST'].format(request.full_path))
+    verify_token = request.args.get('hub.verify_token')
+    if verify_token == config('VERIFY_TOKEN'):
+        hub_challenge = request.args.get('hub.challenge')
+        logger.debug(LOG_TEMPLATES['RETURNING_HUB_CHALLENGE'].format(
+            hub_challenge))
+        return json.dumps({'hub.challenge': hub_challenge}), 200
+
+
+@app.route(OAUTH_TEMPLATES['webhooks_marker'], methods=["POST"])
+def webhook_catcher():
+    if request.content_type == 'application/json':
+        json_data = request.json
+        object_type = json_data.get('object_type')
+        object_id = json_data.get('object_id')
+        owner_id = json_data.get('owner_id')
+        updates = json_data.get('updates')
+    print(object_type, object_id, owner_id, updates)
+    return '', 200
 
 
 @app.route(OAUTH_TEMPLATES['oauth_marker'])

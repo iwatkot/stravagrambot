@@ -1,6 +1,11 @@
 import requests
 
 from decouple import config
+from log_handler import Logger
+from templates_handler import get_template
+
+LOG_TEMPLATES = get_template('log_templates')['webhook_handler']
+logger = Logger(__name__)
 
 
 class WebHook:
@@ -17,63 +22,40 @@ class WebHook:
         self.subcription_id = None
 
     def subscribe(self):
-        data = {
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
+        data = self.params
+        data.update({
             'callback_url': self.callback_url,
             'verify_token': self.verify_token,
-        }
-        response = requests.post(self.api_url, data=data).json()
-        print(response)
-        self.subcription_id = response['id']
-        print(self.subcription_id)
-        # logging subscription_id
+        })
+        logger.debug(LOG_TEMPLATES['SUBSCRIBE_REQUESTED'])
+        response = requests.post(self.api_url, data=data)
+        if response.status_code == 201:
+            response = response.json()
+            logger.debug(LOG_TEMPLATES['API_RESPONDED'].format(response))
+            self.subcription_id = response['id']
+            logger.debug(LOG_TEMPLATES['SUBSCRIPTION_ID'].format(
+                self.subcription_id))
+        else:
+            logger.warning(LOG_TEMPLATES['BAD_RESPONSE'].format(
+                response.json()))
+            self.subcription_id = None
 
     def view(self):
-        response = requests.get(self.api_url, params=self.params).json()
-        self.subcription_id = response[0]['id']
-        print(self.subcription_id)
-        # logging subcsription_id
+        logger.debug(LOG_TEMPLATES['VIEW_REQUESTED'])
+        response = requests.get(self.api_url, params=self.params)
+        if response.status_code == 200:
+            response = response.json()
+            self.subcription_id = response[0]['id']
+            logger.debug(LOG_TEMPLATES['SUBSCRIPTION_ID'].format(
+                self.subcription_id))
+        else:
+            logger.warning(LOG_TEMPLATES['BAD_RESPONSE'].format(
+                response.json()))
+            self.subcription_id = None
 
     def delete(self):
+        logger.debug(LOG_TEMPLATES['DELETE_REQUESTED'])
         response = requests.delete(self.api_url + '/{}'.format(
             self.subcription_id), params=self.params).status_code
         if response == 204:
-            pass
-            # logging subsc deleted
-        
-
-    
-
-
-webhook = WebHook()
-#webhook.subscribe()
-webhook.view()
-#webhook.delete()
-
-
-data = {
-    "aspect_type": "update",
-    "event_time": 1516126040,
-    "object_id": 1360128428,
-    "object_type": "activity",
-    "owner_id": 134815,
-    "subscription_id": 120475,
-    "updates": {
-        "title": "Messy"
-    }
-}
-headers = {'Content-Type': 'application/json'}
-response = requests.post('http://stravagram.space/webhooks/', headers=headers, data=data)
-print(response)
-
-
-#data = {
-#    'client_id': config('CLIENT_ID'),
-#    'client_secret': config('CLIENT_SECRET'),
-#    'callback_url': config('CALLBACK_URL'),
-#    'verify_token': config('VERIFY_TOKEN')
-#}
-
-#response = requests.post('https://www.strava.com/api/v3/push_subscriptions', data=data).json()
-#print(response)
+            logger.debug(LOG_TEMPLATES['SUB_DELETED'])

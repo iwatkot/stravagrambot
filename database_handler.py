@@ -4,7 +4,6 @@ from decouple import config
 from psycopg2 import Error
 from datetime import datetime
 
-from token_handler import Token
 from templates_handler import get_template
 from log_handler import Logger
 
@@ -31,6 +30,9 @@ class DataBase:
             logger.debug(LOG_TEMPLATES['DB_INIT_TELEGRAM_ID'].format(
                 self.telegram_id))
         self.connect()
+        if not self.connection:
+            logger.error(LOG_TEMPLATES['CANT_CONNECT'])
+            return None
 
     def connect(self):
         try:
@@ -103,7 +105,7 @@ class DataBase:
         db_response = cursor.fetchone()[0]
         now = datetime.now().timestamp()
         cursor.close()
-        expired = now > db_response - (6 * 60 * 60)
+        expired = now > db_response - (60 * 60)
         if expired:
             logger.info(LOG_TEMPLATES['TOKEN_EXPIRED'].format(
                 self.telegram_id))
@@ -123,32 +125,12 @@ class DataBase:
         cursor.close()
         return db_response
 
-
-def get_access_token(telegram_id):
-    token_session = DataBase(telegram_id=telegram_id)
-    if not token_session.connection:
-        logger.error(LOG_TEMPLATES['NOT_CONNECTED'])
-        return None
-    if token_session.in_database():
-        token_expired = token_session.token_expired()
-        if token_expired:
-            refresh_token = token_session.get_token('refresh_token')
-            token = Token(telegram_id, refresh_token=refresh_token)
-            auth_data = token.exchange()
-            if auth_data:
-                update_session = DataBase(auth_data=auth_data)
-                if not update_session.connection:
-                    logger.error(LOG_TEMPLATES['NOT_CONNECTED'])
-                    return None
-                update_session.update_data()
-                update_session.disconnect()
-            else:
-                logger.error(LOG_TEMPLATES['UPDATE_TOCKEN_FAILED'].format(
-                    telegram_id))
-                return None
-        access_token = token_session.get_token('access_token')
-        token_session.disconnect()
-        return access_token
-    else:
-        token_session.disconnect()
-        return False
+    def get_strava_id(self):
+        # logging
+        cursor = self.connection.cursor()
+        get_strava_id_query = QUERY_TEMPLATES['get_strava_id_query'].format(
+            self.telegram_id)
+        cursor.execute(get_strava_id_query)
+        strava_id = cursor.fetchone()[0]
+        cursor.close()
+        return strava_id

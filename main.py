@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from decouple import config
 
 from templates_handler import get_template
-from database_handler import get_access_token
+from api import APICaller
 # from log_handler import Logger
 
 # logger = Logger('main')
@@ -26,7 +26,7 @@ class Form(StatesGroup):
 @dp.message_handler(commands=["start"])
 async def start_handler(message: types.Message):
     # Handles the '/start' command.
-    telegram_id, lang, user_name = unpack_message(message, no_token=True)
+    telegram_id, lang, user_name = unpack_message(message)
     await message.reply(BOT_TEMPLATES[lang][message.text].format(user_name),
                         parse_mode='MarkdownV2')
 
@@ -34,36 +34,29 @@ async def start_handler(message: types.Message):
 @dp.message_handler(commands=["auth"])
 async def auth_handler(message: types.Message):
     # Handles the '/auth' command.
-    telegram_id, lang, user_name = unpack_message(message, no_token=True)
+    telegram_id, lang, user_name = unpack_message(message)
     auth_url = URL_TEMPLATES['oauth']['access_request'].format(telegram_id)
     await message.reply(BOT_TEMPLATES[lang][message.text].format(auth_url),
                         parse_mode='MarkdownV2')
 
 
-@dp.message_handler(commands=["check"])
+@dp.message_handler(commands=["getstats"])
 async def check_handler(message: types.Message):
-    # Handles the '/check' command.
-    access_token, telegram_id, lang, user_name = unpack_message(message)
-    if access_token:
-        await bot.send_message(telegram_id, access_token)
-    elif access_token is None:
-        await bot.send_message(
-            telegram_id, BOT_TEMPLATES[lang]['ERROR_WHILE_REFRESHING'])
-    else:
-        await bot.send_message(
-            telegram_id, BOT_TEMPLATES[lang]['NOT_FOUND_IN_DB'])
+    # Handles the '/getstats' command.
+    telegram_id, lang, user_name = unpack_message(message)
+    caller = APICaller(telegram_id=telegram_id)
+    stats = caller.get_stats()
+    await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['STATS'].format(stats))
 
 
-def unpack_message(message, no_token=False):
+def unpack_message(message):
     # Extractng data from message.
     telegram_id = message.from_user.id
-    lang = message.from_user.language_code
-    lang = lang if lang == 'ru' else 'en'
+    # lang = message.from_user.language_code
+    # lang = lang if lang == 'ru' else 'en'
+    lang = 'en'  # temporary while no locale
     user_name = message.from_user.first_name
-    if no_token:
-        return telegram_id, lang, user_name
-    else:
-        return get_access_token(telegram_id), telegram_id, lang, user_name
+    return telegram_id, lang, user_name
 
 
 if __name__ == "__main__":
