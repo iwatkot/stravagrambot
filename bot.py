@@ -13,7 +13,7 @@ from format_handler import get_template
 from api import APICaller
 from log_handler import Logger
 
-logger = Logger('main')
+logger = Logger(__name__)
 TOKEN = config('TOKEN')
 BOT_TEMPLATES = get_template('bot_templates')
 URL_TEMPLATES = get_template('url_templates')
@@ -149,5 +149,9 @@ def unpack_message(message):
     return telegram_id, lang, user_name
 
 
-if __name__ == "__main__":
+def run_bot():
     executor.start_polling(dp)
+
+
+if __name__ == "__main__":
+    run_bot()
