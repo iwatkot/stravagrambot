@@ -4,7 +4,7 @@ from decouple import config
 from psycopg2 import Error
 from datetime import datetime
 
-from templates_handler import get_template
+from format_handler import get_template
 from log_handler import Logger
 
 QUERY_TEMPLATES = get_template('query_templates')

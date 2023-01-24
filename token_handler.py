@@ -2,7 +2,7 @@ import requests
 
 from decouple import config
 
-from templates_handler import get_template
+from format_handler import get_template
 from log_handler import Logger
 
 OAUTH_URLS = get_template('url_templates')['oauth']

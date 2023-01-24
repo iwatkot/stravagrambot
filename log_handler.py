@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 
-from templates_handler import get_template
+from format_handler import get_template
 
 absolute_path = os.path.dirname(__file__)
 

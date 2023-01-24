@@ -6,8 +6,5 @@
     {% for line in message %}
       <p>{{ line }}</p>
     {% endfor %}
-    {% if result == 'Authentication failed' %}
-     <img src="static/oauth_guide.gif">
-    {% endif %}
   </div>
 {% endblock content %}

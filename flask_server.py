@@ -4,7 +4,7 @@ import logging
 from flask import Flask, request, render_template
 from decouple import config
 
-from templates_handler import get_template
+from format_handler import get_template
 from database_handler import DataBase
 from log_handler import Logger
 from token_handler import Token
@@ -47,7 +47,7 @@ def oauth():
     telegram_id = request.args.get('telegram_id')
     code = request.args.get('code')
     scope = request.args.get('scope')
-    if 'read_all' not in scope:
+    if 'activity:read_all' not in scope:
         logger.debug(LOG_TEMPLATES['BAD_REQUEST'].format(telegram_id))
         message = OAUTH_TEMPLATES['bad_request']
         result = 'Authentication failed'

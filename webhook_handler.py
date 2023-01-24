@@ -2,7 +2,7 @@ import requests
 
 from decouple import config
 from log_handler import Logger
-from templates_handler import get_template
+from format_handler import get_template
 
 LOG_TEMPLATES = get_template('log_templates')['webhook_handler']
 logger = Logger(__name__)

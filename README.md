@@ -7,7 +7,7 @@ The bot has two locales: by default it's using **en**, but it the lang_code in m
 ## Strava OAuth
 The bot generates OAuth links and send them to the user in Telegram. After user granted access to the bot, he will be redirected to the website, where bot's webserver is working. The webserver is built on `Flask` and designed for recieving OAuth redirects and to talk with Strava webhook service.
 
-# Logging
+## Logging
 The bot uses custom `Logger` class based on Python's logging library. The custom class is pretty simple and designed for logging to the file and stdout in simple format with, where's the most of modules using the `__name__` variable for Logger name, which makes it easier to read the logs and finding errors.
 
 ## Database
