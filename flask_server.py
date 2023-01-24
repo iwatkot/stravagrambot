@@ -78,8 +78,12 @@ def oauth_init(telegram_id, code):
         logger.error(LOG_TEMPLATES['OAUTH_FAILED'])
 
 
-if __name__ == '__main__':
+def run_server():
     port = 80
     logger.info(LOG_TEMPLATES['SERVER_STARTED'].format(port))
     app.run(port=port, host='0.0.0.0')
     logger.warning(LOG_TEMPLATES['SERVER_STOPPED'])
+
+
+if __name__ == '__main__':
+    run_server()

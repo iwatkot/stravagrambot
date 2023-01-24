@@ -2,7 +2,7 @@
 
 ## How and why
 This telegram bot is built on `aiogram` library and uses **Strava API** to help athletes get data from their Strava accounts via Telegram bot.<br>
-The bot has two locales: by default it's using **en**, but it the lang_code in message has **ru** code, the bot will use this language.
+Bot uses PostgreSQL to store data, which was accuqired from Flask webserver through the OAuth process.
 
 ## Strava OAuth
 The bot generates OAuth links and send them to the user in Telegram. After user granted access to the bot, he will be redirected to the website, where bot's webserver is working. The webserver is built on `Flask` and designed for recieving OAuth redirects and to talk with Strava webhook service.
@@ -19,11 +19,22 @@ _later_
 ## Strava webhooks
 _later_
 
+## GPX creator
+_later_
+
 ## Modules
 _later_
 
-## To-Do
+## Commands
 _later_
 
+## Admin commands
+
+## To-Do
+- Simple landing pages for the Flask.
+- Commands for accessing segments on Strava.
+
+
 ## Changelog
-_after beta release_
+**2023/01/24** - Added admin commands (/users and /logs) for easy access to logs and database via Telegram.<br>
+**2023/01/24** - Removed `run.py`, integrated commands to the main bot file.

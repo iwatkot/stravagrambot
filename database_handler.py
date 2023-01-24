@@ -126,7 +126,8 @@ class DataBase:
         return db_response
 
     def get_strava_id(self):
-        # logging
+        logger.debug(LOG_TEMPLATES['GETTING_STRAVA_ID'].format(
+            self.telegram_id))
         cursor = self.connection.cursor()
         get_strava_id_query = QUERY_TEMPLATES['get_strava_id_query'].format(
             self.telegram_id)
@@ -134,3 +135,12 @@ class DataBase:
         strava_id = cursor.fetchone()[0]
         cursor.close()
         return strava_id
+
+    def get_users(self):
+        logger.debug(LOG_TEMPLATES['GETTING_USERS'])
+        cursor = self.connection.cursor()
+        get_users_query = QUERY_TEMPLATES['get_users']
+        cursor.execute(get_users_query)
+        users = cursor.fetchall()
+        cursor.close()
+        return users

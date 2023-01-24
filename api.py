@@ -53,7 +53,8 @@ class APICaller:
                     return None
             access_token = token_session.get_token('access_token')
             token_session.disconnect()
-            logger.debug(LOG_TEMPLATES['TOKEN_RETRIEVED'].format(self.telegram_id))
+            logger.debug(LOG_TEMPLATES['TOKEN_RETRIEVED'].format(
+                self.telegram_id))
             self.access_token = access_token
         else:
             self.access_token = None
@@ -76,7 +77,7 @@ class APICaller:
         logger.debug(LOG_TEMPLATES['ACTIVITIES'].format(self.telegram_id))
         if not after and not before:
             before = int(datetime.now().timestamp())
-            after = before - (90 * 24 * 60 * 60)
+            after = before - (60 * 24 * 60 * 60)
         params = {
             'before': before,
             'after': after,

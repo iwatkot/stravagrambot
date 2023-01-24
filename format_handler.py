@@ -140,3 +140,12 @@ def pace_formatter(speed):
     pace = datetime.strptime((
         str(timedelta(seconds=(round(1000 / speed))))), '%H:%M:%S')
     return escape(datetime.strftime(pace, '%M:%S'))
+
+
+def format_users(users):
+    message = '`List of the in the database:`\n\n'
+    for user in users:
+        id = user[0]
+        message += '[{}]({}{}) '.format(
+            id, FORMATTER_URLS['user_profile_url'], id)
+    return message

@@ -1,5 +1,7 @@
 import re
+import os
 
+from multiprocessing import Process
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
@@ -9,15 +11,19 @@ from datetime import datetime
 
 import format_handler as formatter
 
+from database_handler import DataBase
+from flask_server import run_server
 from format_handler import get_template
 from api import APICaller
 from log_handler import Logger
 
-logger = Logger(__name__)
+logger = Logger('bot')
 TOKEN = config('TOKEN')
 BOT_TEMPLATES = get_template('bot_templates')
 URL_TEMPLATES = get_template('url_templates')
 LOG_TEMPLATES = get_template('log_templates')['main']
+LOG_FILE = os.path.join(os.path.dirname(__file__), 'logs/main_log.txt')
+ADMIN = int(config('ADMIN'))
 
 storage = MemoryStorage()
 bot = Bot(token=TOKEN)
@@ -63,9 +69,13 @@ async def recent_handler(message: types.Message):
     telegram_id, lang, user_name = unpack_message(message)
     caller = APICaller(telegram_id=telegram_id)
     activities = caller.activities()
-    formatted_activities = formatter.activities(activities=activities)
-    await bot.send_message(telegram_id, formatted_activities,
-                           parse_mode='MarkdownV2')
+    if not activities:
+        await bot.send_message(
+            telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITIES'])
+    else:
+        formatted_activities = formatter.activities(activities=activities)
+        await bot.send_message(telegram_id, formatted_activities,
+                               parse_mode='MarkdownV2')
 
 
 @dp.message_handler(regexp_commands=[r'/activity?(?P<activity_id>\w+)'])
@@ -128,14 +138,41 @@ async def find_finish(message: types.Message, state: FSMContext):
     except Exception:
         await message.reply(BOT_TEMPLATES[lang]['WRONG_PERIOD'])
         return
-    if 0 < before - after < (180 * 24 * 60 * 60):
+    if 0 < before - after < (120 * 24 * 60 * 60):
         caller = APICaller(telegram_id=telegram_id)
         activities = caller.activities(before=before, after=after)
-        formatted_activities = formatter.activities(activities=activities)
-        await bot.send_message(telegram_id, formatted_activities,
-                               parse_mode='MarkdownV2')
+        if not activities:
+            await bot.send_message(
+                telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITIES'])
+        else:
+            formatted_activities = formatter.activities(activities=activities)
+            await bot.send_message(telegram_id, formatted_activities,
+                                   parse_mode='MarkdownV2')
     else:
         await message.reply(BOT_TEMPLATES[lang]['WRONG_PERIOD'])
+
+
+# Administration commands.
+@dp.message_handler(commands=["users"])
+async def users_handler(message: types.Message):
+    # Handles the '/users' command.
+    telegram_id, lang, user_name = unpack_message(message)
+    if telegram_id == ADMIN:
+        users_session = DataBase(telegram_id=telegram_id)
+        users = users_session.get_users()
+        formatted_message = formatter.format_users(users)
+        await bot.send_message(telegram_id, formatted_message,
+                               disable_web_page_preview=True,
+                               parse_mode='MarkdownV2')
+
+
+@dp.message_handler(commands=["logs"])
+async def logs_handler(message: types.Message):
+    # Handles the '/users' command.
+    telegram_id, lang, user_name = unpack_message(message)
+    if telegram_id == ADMIN:
+        file = types.InputFile(LOG_FILE)
+        await bot.send_document(telegram_id, file)
 
 
 def unpack_message(message):
@@ -149,9 +186,7 @@ def unpack_message(message):
     return telegram_id, lang, user_name
 
 
-def run_bot():
-    executor.start_polling(dp)
-
-
 if __name__ == "__main__":
-    run_bot()
+    server_process = Process(target=run_server)
+    server_process.start()
+    executor.start_polling(dp)

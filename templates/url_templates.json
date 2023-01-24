@@ -10,6 +10,7 @@
         "streams": "https://www.strava.com/api/v3/activities/{}/streams"
     },
     "formatter": {
-        "activity_url": "https://www\\.strava\\.com/activities/"
+        "activity_url": "https://www\\.strava\\.com/activities/",
+        "user_profile_url": "https://www.strava.com/athletes/"
     }
 }

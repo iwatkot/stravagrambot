@@ -14,7 +14,9 @@
         "TOKEN_NOT_EXPIRED": "The access token for Telegram ID [{}] isn't expired yet.",
         "GETTING_TOKEN": "Getting [{}] from the database for Telegram ID: [{}].",
         "TOKEN_REFRESHED": "The access token for Telegram ID: [{}] is successfully refreshed.",
-        "CANT_CONNECT": "Failed to connect to the database."
+        "CANT_CONNECT": "Failed to connect to the database.",
+        "GETTING_STRAVA_ID": "Getting strava_id from the database for Telegram ID: [{}].",
+        "GETTING_USERS": "Executing information about all users in the database."
     },
     "flask_server": {
         "SERVER_STARTED": "OAuth server successfully started. Listening on port [{}].",
