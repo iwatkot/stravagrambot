@@ -31,10 +31,13 @@ _later_
 ## Admin commands
 
 ## To-Do
-- Simple landing pages for the Flask.
-- Commands for accessing segments on Strava.
+- Dialog awaiting for incorrect inputs in /find command<br>
+- Commands for accessing segments on Strava.<br>
+- Commands for accessing athlete's gear<br>
+- Commands for accessing athlete's routes<br>
 
 
 ## Changelog
+**2023/01/25** - Added simple pages for Flask webserver.<br>
 **2023/01/24** - Added admin commands (/users and /logs) for easy access to logs and database via Telegram.<br>
 **2023/01/24** - Removed `run.py`, integrated commands to the main bot file.

@@ -3,4 +3,5 @@ __pycache__/
 gpx/
 .git/
 logs/
+static/
 .env

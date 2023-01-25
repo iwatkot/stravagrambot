@@ -2,6 +2,7 @@ import json
 import logging
 
 from flask import Flask, request, render_template
+from flask_bootstrap import Bootstrap4
 from decouple import config
 
 from format_handler import get_template
@@ -16,7 +17,7 @@ flask_log = logging.getLogger('werkzeug')
 flask_log.disabled = True
 
 app = Flask(__name__)
-
+bootstrap = Bootstrap4(app)
 
 @app.route(OAUTH_TEMPLATES['webhooks_marker'], methods=["GET"])
 def webhook_challenge():
@@ -59,6 +60,21 @@ def oauth():
         result = 'Authentication successfull'
     return render_template('pages/oauth.html',
                            result=result, message=message)
+
+
+@app.route('/')
+def index_page():
+    return render_template('pages/index.html')
+
+
+@app.route('/about')
+def about_page():
+    return render_template('pages/about.html')
+
+
+@app.route('/changelog')
+def changelog_page():
+    return render_template('pages/changelog.html')
 
 
 def oauth_init(telegram_id, code):
