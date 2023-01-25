@@ -1,0 +1,73 @@
+{
+    "en": {
+        "stats": {
+            "all_ride_totals": "Ride overall stats",
+            "all_run_totals": "Run overall stats",
+            "ytd_ride_totals": "This year ride stats",
+            "ytd_run_totals": "This year run stats"
+        },
+        "weekavg": {
+            "ytd_ride_totals": "Average ride stats per week",
+            "ytd_run_totals": "Average run stats per week"
+        },
+        "stats_for_humans": {
+            "count": "Number",
+            "distance": "Distance",
+            "moving_time": "Moving time",
+            "elapsed_time": "Total time",
+            "elevation_gain": "Total elevation gain"
+        },
+        "act": {
+            "date_name": "*{}* \\| `{}`\n",
+            "dist_type_elev": "`{dist} km`  {type} with  `{elev} m`  elevation gained\n",
+            "pace": "*Average pace:*  `{}` \\| *Maximum pace:*  `{}`\n",
+            "speed": "*Average speed:*  `{} km\\/h` \\| *Maximum speed:*  `{} km\\/h`\n",
+            "hr": "*Average HR:* `{}` \\| *Maximum HR:* `{}`\n",
+            "time": "*Moving time:*  `{}` \\| *Elapsed time:*  `{}`\n",
+            "idle": "*Idle time:*  `{}` \\| *Idle percent:*  `{} %`\n",
+            "elev": "*Highest elevation:* `{} m` \\| *Lowest elevation:* `{} m`\n",
+            "device": "*Workout recorded with:* {}\n",
+            "gear": "*Gear:* {}\n",
+            "strava_url": "[Check activity on Strava]({}{})\n\n",
+            "dl": "*Download GPX file:* /download{}"
+        }
+    },
+    "ru": {
+        "stats": {
+            "all_ride_totals": "Статистика заездов за все время",
+            "all_run_totals": "Статистика забегов за все время",
+            "ytd_ride_totals": "Статистика заездов в этом году",
+            "ytd_run_totals": "Статистика забегов в этом году"
+        },
+        "weekavg": {
+            "ytd_ride_totals": "Еженедельная статистика заездов в этом году",
+            "ytd_run_totals": "Еженедельная статистика забегов в этом году"
+        },
+        "stats_for_humans": {
+            "count": "Количество",
+            "distance": "Расстояние",
+            "moving_time": "Время в движении",
+            "elapsed_time": "Общее время",
+            "elevation_gain": "Общий набор высоты"
+        },
+        "act": {
+            "date_name": "*{}* \\| `{}`\n",
+            "dist_type_elev": "{type} на  `{dist} км`  с набором высоты  `{elev} м`\n",
+            "pace": "*Средний темп:*  `{}` \\| *Максимальный темп:*  `{}`\n",
+            "speed": "*Средняя скорость:*  `{} km\\/h` \\| *Максимальная скорость:*  `{} km\\/h`\n",
+            "hr": "*Средний пульс:* `{}` \\| *Максимальный пульс:* `{}`\n",
+            "time": "*Время в движении:*  `{}` \\| *Общее время:*  `{}`\n",
+            "idle": "*Время бездействия:*  `{}` \\| *Процент бездействия:*  `{} %`\n",
+            "elev": "*Самая высокая точка:* `{} m` \\| *Самая низкая точка:* `{} m`\n",
+            "device": "*Тренировка записана с помощью:* {}\n",
+            "gear": "*Экипировка:* {}\n",
+            "strava_url": "[Посмотреть тренировку на сайте Strava]({}{})\n\n",
+            "dl": "*Скачать GPX файл:* /download{}"
+        },
+        "types": {
+            "run": "забег",
+            "ride": "заезд"
+        }
+    },
+    "pace_act": ["run", "забег"]
+}

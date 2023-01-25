@@ -1,4 +1,4 @@
-# In developing now
+# In development now
 
 ## How and why
 This telegram bot is built on `aiogram` library and uses **Strava API** to help athletes get data from their Strava accounts via Telegram bot.<br>
@@ -31,13 +31,16 @@ _later_
 ## Admin commands
 
 ## To-Do
-- Dialog awaiting for incorrect inputs in /find command<br>
 - Commands for accessing segments on Strava.<br>
 - Commands for accessing athlete's gear<br>
 - Commands for accessing athlete's routes<br>
 
 
 ## Changelog
+**2023/01/25** - Added `ru` locale for /activity data.<br>
+**2023/01/25** - Added HR and elevation data to the activities.<br>
+**2023/01/25** - Added dialog for incorrect /find inputs. Now the bot will wait for correct data till user will input it or use the /cancel command.<br>
+**2023/01/25** - Added `ru` locale for /stats commands, added /weekavg command with average stats per week in the current year.<br>
 **2023/01/25** - Added simple pages for Flask webserver.<br>
 **2023/01/24** - Added admin commands (/users and /logs) for easy access to logs and database via Telegram.<br>
 **2023/01/24** - Removed `run.py`, integrated commands to the main bot file.

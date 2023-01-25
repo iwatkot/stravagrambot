@@ -13,35 +13,41 @@ def get_template(file):
 
 
 FORMATTER_URLS = get_template('url_templates')['formatter']
+FORMATTER_TEMPLATES = get_template('formatter_templates')
 
 
-def stats(stats, type):
-    stat_dicts = {
-        'all_ride_totals': "Ride overall stats",
-        'all_run_totals': "Run overall stats",
-        'ytd_ride_totals': "This year ride stats",
-        'ytd_run_totals': "This year run stats"}
-    if type == 'year':
-        del stat_dicts['all_ride_totals']
-        del stat_dicts['all_run_totals']
+def stats(stats, period='all', lang='en'):
+    if period == 'week':
+        data_dict = FORMATTER_TEMPLATES[lang]['weekavg']
+        today = datetime.date(datetime.now())
+        divider = today.isocalendar().week
+    else:
+        data_dict = FORMATTER_TEMPLATES[lang]['stats']
+        if period == 'year':
+            del data_dict['all_ride_totals']
+            del data_dict['all_run_totals']
+        divider = 1
     message = ''
-    for k, v in stat_dicts.items():
+    for k, v in data_dict.items():
         stat_dict = stats.get(k)
         count = stat_dict.get('count')
         if count:
             message += '`{}`\n'.format(v)
             for k, v in stat_dict.items():
-                message += "*{}*: ".format(k.replace('_', ' ').title())
+                message += "*{}*: ".format(
+                    FORMATTER_TEMPLATES[lang]['stats_for_humans'][k])
                 if 'distance' in k:
-                    escaped_distance = escape(str(round(v / 1000, 2)))
-                    message += "{} km\n".format(escaped_distance)
+                    v = v / divider
+                    message += "`{} km`\n".format(distance_formatter(v))
                 elif 'time' in k:
-                    time = timedelta(seconds=v)
-                    message += "{}\n".format(time)
+                    v = round(v / divider)
+                    message += "`{}`\n".format(timedelta(seconds=v))
                 elif 'elevation' in k:
-                    message += "{} m\n".format(v)
+                    v = round(v / divider)
+                    message += "`{} m`\n".format(v)
                 else:
-                    message += "{}\n".format(v)
+                    v = round(v / divider, 1)
+                    message += "`{}`\n".format(v)
             message += '\n'
         if not message:
             message = 'You have no actual data in your Strava account\\.'
@@ -65,12 +71,14 @@ def activities(activities):
         return message
 
 
-def activity(activity):
+def activity(activity, lang='en'):
     if activity:
         useful_data = ['start_date_local', 'name', 'description', 'id',
                        'distance', 'type', 'average_speed', 'max_speed',
                        'total_elevation_gain', 'moving_time', 'elapsed_time',
-                       'device_name', 'gear']
+                       'device_name', 'gear', 'has_heartrate',
+                       'average_heartrate', 'max_heartrate',
+                       'elev_high', 'elev_low']
         activity_data = {k: activity.get(k) for k in useful_data}
         activity_type = activity_data.get('type').lower()
         id = activity_data.get('id')
@@ -82,44 +90,58 @@ def activity(activity):
         elevation = activity_data.get('total_elevation_gain')
         description = activity_data.get('description')
         gear = activity_data.get('gear')
+        highest_elev = activity_data.get('elev_high')
+        lowest_elev = activity_data.get('elev_low')
+        if lang != 'en':
+            localed_activity = FORMATTER_TEMPLATES[lang]['types'].get(
+                activity_type)
+            if localed_activity:
+                activity_type = localed_activity
         if gear:
             gear_nickname = gear.get('nickname')
         else:
             gear_nickname = None
         device_name = activity_data.get('device_name')
         message = ''
-        message += '*{}* \\| `{}`\n'.format(
+        message += FORMATTER_TEMPLATES[lang]['act']['date_name'].format(
             timez_formatter(activity_data.get('start_date_local')),
             escape(activity_data.get('name').strip()))
         if description:
             message += '_{}_\n'.format(escape(description))
-        message += '`{} km`  {} with  `{} m`  elevation gained\n'.format(
-            distance_formatter(activity_data.get('distance')),
-            activity_type, escape(str(round(elevation))))
+        message += FORMATTER_TEMPLATES[lang]['act']['dist_type_elev'].format(
+            dist=distance_formatter(activity_data.get('distance')),
+            type=activity_type, elev=escape(str(round(elevation))))
         if average_speed and maximum_speed:
-            if activity_type == 'run':
-                message += '*Average pace:*  `{}` \\| '.format(
-                    pace_formatter(average_speed))
-                message += '*Maximum pace:*  `{}`\n'.format(
+            if activity_type in FORMATTER_TEMPLATES['pace_act']:
+                message += FORMATTER_TEMPLATES[lang]['act']['pace'].format(
+                    pace_formatter(average_speed),
                     pace_formatter(maximum_speed))
             else:
-                message += '*Average speed:*  `{} km\\/h` \\| '.format(
-                    speed_formatter(average_speed))
-                message += '*Maximum speed:*  `{} km\\/h`\n'.format(
+                message += FORMATTER_TEMPLATES[lang]['act']['speed'].format(
+                    speed_formatter(average_speed),
                     speed_formatter(maximum_speed))
-        message += '*Moving time:*  `{}` \\| *Elapsed time:*  `{}`\n'.format(
+        if activity_data.get('has_heartrate'):
+            average_heartrate = activity_data.get('average_heartrate')
+            maximum_heartrate = activity_data.get('max_heartrate')
+            message += FORMATTER_TEMPLATES[lang]['act']['hr'].format(
+                average_heartrate, maximum_heartrate)
+        message += FORMATTER_TEMPLATES[lang]['act']['time'].format(
             timedelta(seconds=moving_time), timedelta(seconds=elapsed_time))
-        message += '*Idle time:*  `{}` \\| *Idle percent:*  `{} %`\n'.format(
+        message += FORMATTER_TEMPLATES[lang]['act']['idle'].format(
             timedelta(seconds=idle_time),
             escape(str(round((idle_time / elapsed_time) * 100, 2))))
+        if highest_elev and lowest_elev:
+            message += FORMATTER_TEMPLATES[lang]['act']['elev'].format(
+                highest_elev, lowest_elev)
         if device_name:
-            message += '*Workout recorded with:* {}\n'.format(
+            message += FORMATTER_TEMPLATES[lang]['act']['device'].format(
                 escape(device_name))
         if gear_nickname:
-            message += '*Gear:* {}\n'.format(escape(gear_nickname))
-        message += '[Check activity on Strava]({}{})\n\n'.format(
+            message += FORMATTER_TEMPLATES[lang]['act']['gear'].format(
+                escape(gear_nickname))
+        message += FORMATTER_TEMPLATES[lang]['act']['strava_url'].format(
             FORMATTER_URLS['activity_url'], id)
-        message += '*Download GPX file:* /download{}'.format(id)
+        message += FORMATTER_TEMPLATES[lang]['act']['dl'].format(id)
         return message
 
 

@@ -6,7 +6,7 @@
         "ERROR_WHILE_REFRESHING": "The bot can't update your Strava access token due to bad response from Stava API.\nUsually it happens when you revoke the access to the bot. Please authorize the bot one more time with the /auth command.",
         "FIND_INIT": "Send the time period to search your activities\\. It should be formatted like this:\n\n `YYYY\\-MM\\-DD YYYY\\-MM\\-DD`\n\nFirst date \\- start date to search activites, and the second one is the end of the time period\\.\nSelected time period should be less than *120 days*\\.\nYou can use /cancel command to stop the operation\\.",
         "CANCELLED": "The operation was cancelled.",
-        "WRONG_PERIOD": "The time period you entered is incorrect.",
+        "WRONG_PERIOD": "The time period you entered is incorrect. Please try again or use /cancel.",
         "BAD_GPX_REQUEST": "The bot can't generate GPX file for this activity. Check if it has actual GPS data.",
         "NO_ACTIVITIES": "There's no activites in the specified period of time."
     },
@@ -17,7 +17,7 @@
         "ERROR_WHILE_REFRESHING": "Бот не смог обновить ваш уникальный токен для доступа к Strava.\nСкорее всего вы деавторизовали бота в вашей учетной записи Strava. Авторизуйте бота заново с помощью команды /auth.",
         "FIND_INIT": "Чтобы найти ваши тренировки, пришлите мне диапазон дат для поиска\\. Сообщение должно быть отформатировано так:\n\n `YYYY\\-MM\\-DD YYYY\\-MM\\-DD`\n\nГде первая дата \\- это начало диапазона для поиска тренировок, а вторая \\- его конец\\.\nВыбранный период времени должен быть меньше *120 дней*\\.\nВы можете воспользоваться командой /cancel, чтобы отменить операцию\\.",
         "CANCELLED": "Операция отменена.",
-        "WRONG_PERIOD": "Вы ввели некорректный промежуток времени.",
+        "WRONG_PERIOD": "Вы ввели некорректный промежуток времени. Пожалуйста, попробуйте еще раз или используйте команду /cancel.",
         "BAD_GPX_REQUEST": "Бот не смог сгенерировать GPX файл для данной активности. Проверьте, есть ли в этой тренировке GPS данные.",
         "NO_ACTIVITIES": "В указанном промежутке времени нет тренировок."
     }

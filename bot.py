@@ -51,14 +51,25 @@ async def auth_handler(message: types.Message):
                         parse_mode='MarkdownV2')
 
 
-@dp.message_handler(regexp_commands=[r'/stats?(?P<type>\w+)'])
+@dp.message_handler(regexp_commands=[r'/stats?(?P<period>\w+)'])
 async def stats_handler(message: types.Message, regexp_command: re.Match[str]):
     # Handles the '/stats' command.
-    type = regexp_command['type']
+    period = regexp_command['period']
     telegram_id, lang, user_name = unpack_message(message)
     caller = APICaller(telegram_id=telegram_id)
     stats = caller.get_stats()
-    formated_stats = formatter.stats(stats, type)
+    formated_stats = formatter.stats(stats, lang=lang, period=period)
+    await bot.send_message(
+        telegram_id, formated_stats, parse_mode='MarkdownV2')
+
+
+@dp.message_handler(commands=["weekavg"])
+async def weekavg_handler(message: types.Message):
+    # Handles the '/stats' command.
+    telegram_id, lang, user_name = unpack_message(message)
+    caller = APICaller(telegram_id=telegram_id)
+    stats = caller.get_stats()
+    formated_stats = formatter.stats(stats, lang=lang, period='week')
     await bot.send_message(
         telegram_id, formated_stats, parse_mode='MarkdownV2')
 
@@ -86,7 +97,7 @@ async def activity_handler(message: types.Message,
     telegram_id, lang, user_name = unpack_message(message)
     caller = APICaller(telegram_id=telegram_id)
     activity = caller.activity(activity_id)
-    formatted_activity = formatter.activity(activity=activity)
+    formatted_activity = formatter.activity(activity=activity, lang=lang)
     await bot.send_message(telegram_id, formatted_activity,
                            parse_mode='MarkdownV2')
 
@@ -130,7 +141,6 @@ async def cancel_handler(message: types.Message, state: FSMContext):
 async def find_finish(message: types.Message, state: FSMContext):
     # Catching the answer for the /find command.
     telegram_id, lang, user_name = unpack_message(message)
-    await state.finish()
     try:
         dates = message.text.split()
         after, before = tuple(map(
@@ -141,6 +151,7 @@ async def find_finish(message: types.Message, state: FSMContext):
     if 0 < before - after < (120 * 24 * 60 * 60):
         caller = APICaller(telegram_id=telegram_id)
         activities = caller.activities(before=before, after=after)
+        await state.finish()
         if not activities:
             await bot.send_message(
                 telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITIES'])
