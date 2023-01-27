@@ -1,12 +1,21 @@
 {% extends 'pages/base.html' %}
-{% block title %}StravaGram: About the project{% endblock title %}
+{% block title %}StravaGram - {{ context['about_page_title'] }}{% endblock title %}
+{% block about %}{{ context['about'] }}{% endblock %}
+{% block changelog %}{{ context['changelog'] }}{% endblock %}
 {% block content  %}
-<div class="card text-center">
-  <div class="card-body">
-    <h5 class="card-title">A little more about StravaGram</h5>
-      <p class="card-text">
-        in development
-      </p>
-  </div>
-</div>
+<main role='main' class='container'>
+  <div class="row">
+    <div class="col"></div>
+    <div class="col-10">
+      <div class="jumbotron" style="background-color: white;">
+        <div class="container">
+          <h1 class="display-4">{{ context['about_title'] }}</h1>
+          {% for line in content %}
+            <p class="lead">{{ line }}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  <div class="col"></div>
+</main>
 {% endblock content %}

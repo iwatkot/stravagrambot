@@ -1,16 +1,24 @@
 {% extends 'pages/base.html' %}
-{% block title %}StravaGram - Your Strava activities in Telegram{% endblock title %}
+{% block title %}StravaGram - {{ context['index_page_title'] }}{% endblock %}
+{% block about %}{{ context['about'] }}{% endblock %}
+{% block changelog %}{{ context['changelog'] }}{% endblock %}
 {% block content  %}
-<div class="card text-center">
-  <img class="card-img-top width 200" src="/static/stravagram-colored-wide.png" alt="Card image cap">
-  <div class="card-body">
-    <h5 class="card-title">Your Strava activities in Telegram</h5>
-      <p class="card-text">
-        Check the stats, download GPX files and share your activities with friends.
-        Watch out for your starred segments, review your gear and a lot of other useful stuff for Strava right in your Telegram.
-      </p>
-      <p class="card-text"><small class="text-muted">currently in alpha version</small></p>
-    <a href="http://t.me/stravagrambot" class="btn btn-outline-light btn-lg" role="button" aria-disabled="true" style="background-color: #a541ff;">Launch bot</a>
-  </div>
-</div>
+<main role='main' class='container'>
+  <div class="row">
+    <div class="col"></div>
+    <div class="col-7">
+      <div class="card text-center">
+        <img class="card-img-top width 200" src="/static/stravagram-colored-wide.png" alt="Card image cap">
+        <div class="card-body">
+          <h5 class="card-title">{{ context['index_title'] }}</h5>
+          <p class="card-text">
+            {{ context['index_description'] }}
+          </p>
+          <p class="card-text"><small class="text-muted">{{ context['index_comment'] }}</small></p>
+          <a href="http://t.me/stravagrambot" class="btn btn-outline-light btn-lg" role="button" aria-disabled="true" style="background-color: #a541ff;">{{ context['bot_button'] }}</a>
+        </div>
+      </div>    
+    </div>
+  <div class="col"></div>
+</main>
 {% endblock content %}

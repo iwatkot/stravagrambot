@@ -11,6 +11,7 @@ from datetime import datetime
 
 import format_handler as formatter
 
+from webhook_handler import WebHook
 from database_handler import DataBase
 from flask_server import run_server
 from format_handler import get_template
@@ -40,6 +41,8 @@ async def start_handler(message: types.Message):
     telegram_id, lang, user_name = unpack_message(message)
     await message.reply(BOT_TEMPLATES[lang][message.text].format(user_name),
                         parse_mode='MarkdownV2')
+    await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['TOUR'],
+                           parse_mode='MarkdownV2')
 
 
 @dp.message_handler(commands=["auth"])
@@ -59,8 +62,12 @@ async def stats_handler(message: types.Message, regexp_command: re.Match[str]):
     caller = APICaller(telegram_id=telegram_id)
     stats = caller.get_stats()
     formated_stats = formatter.stats(stats, lang=lang, period=period)
-    await bot.send_message(
-        telegram_id, formated_stats, parse_mode='MarkdownV2')
+    if formated_stats:
+        await bot.send_message(
+            telegram_id, formated_stats, parse_mode='MarkdownV2')
+    else:
+        await bot.send_message(
+            telegram_id, BOT_TEMPLATES[lang]['NO_STATS'])
 
 
 @dp.message_handler(commands=["weekavg"])
@@ -84,7 +91,8 @@ async def recent_handler(message: types.Message):
         await bot.send_message(
             telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITIES'])
     else:
-        formatted_activities = formatter.activities(activities=activities)
+        formatted_activities = formatter.activities(
+            activities=activities, lang=lang)
         await bot.send_message(telegram_id, formatted_activities,
                                parse_mode='MarkdownV2')
 
@@ -99,6 +107,19 @@ async def activity_handler(message: types.Message,
     activity = caller.activity(activity_id)
     formatted_activity = formatter.activity(activity=activity, lang=lang)
     await bot.send_message(telegram_id, formatted_activity,
+                           parse_mode='MarkdownV2')
+
+
+@dp.message_handler(regexp_commands=[r'/segment?(?P<segment_id>\w+)'])
+async def segment_handler(message: types.Message,
+                          regexp_command: re.Match[str]):
+    # Handles the '/segment' command.
+    segment_id = regexp_command['segment_id']
+    telegram_id, lang, user_name = unpack_message(message)
+    caller = APICaller(telegram_id=telegram_id)
+    segment = caller.segment(segment_id)
+    formatted_segment = formatter.segment(segment=segment, lang=lang)
+    await bot.send_message(telegram_id, formatted_segment,
                            parse_mode='MarkdownV2')
 
 
@@ -184,6 +205,42 @@ async def logs_handler(message: types.Message):
     if telegram_id == ADMIN:
         file = types.InputFile(LOG_FILE)
         await bot.send_document(telegram_id, file)
+
+
+@dp.message_handler(regexp_commands=[r'/webhook?(?P<action>\w+)'])
+async def webhook_handler(message: types.Message,
+                          regexp_command: re.Match[str]):
+    action = regexp_command['action']
+    telegram_id, lang, user_name = unpack_message(message)
+    if telegram_id == ADMIN:
+        webhook = WebHook()
+        if action == 'subscribe':
+            result = webhook.subscribe()
+            if result:
+                await bot.send_message(
+                    telegram_id, BOT_TEMPLATES['admin']['WH_SUB_GOOD'].format(
+                        result))
+            else:
+                await bot.send_message(
+                    telegram_id, BOT_TEMPLATES['admin']['WH_SUB_BAD'])
+        elif action == 'view':
+            result = webhook.view()
+            if result:
+                await bot.send_message(
+                    telegram_id, BOT_TEMPLATES['admin']['WH_VIEW_GOOD'].format(
+                        result))
+            else:
+                await bot.send_message(
+                    telegram_id, BOT_TEMPLATES['admin']['WH_VIEW_BAD'])
+        elif action == 'delete':
+            webhook.view()
+            result = webhook.delete()
+            if result:
+                await bot.send_message(
+                    telegram_id, BOT_TEMPLATES['admin']['WH_DEL_GOOD'])
+            else:
+                await bot.send_message(
+                    telegram_id, BOT_TEMPLATES['admin']['WH_DEL_BAD'])
 
 
 def unpack_message(message):

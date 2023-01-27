@@ -2,8 +2,6 @@ import logging
 import os
 import sys
 
-from format_handler import get_template
-
 absolute_path = os.path.dirname(__file__)
 
 try:
@@ -11,7 +9,7 @@ try:
 except FileExistsError:
     pass
 
-LOG_FORMATTER = get_template('log_templates')['log_formatter']
+LOG_FORMATTER = "%(name)s | %(asctime)s | %(levelname)s | %(message)s"
 LOG_FILE = os.path.join(absolute_path, 'logs/main_log.txt')
 
 

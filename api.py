@@ -57,6 +57,7 @@ class APICaller:
                 self.telegram_id))
             self.access_token = access_token
         else:
+            token_session.disconnect()
             self.access_token = None
 
     def get_stats(self):
@@ -102,9 +103,9 @@ class APICaller:
         if response.status_code == 200:
             logger.debug(LOG_TEMPLATES['GOOD_RESPONSE'].format(
                 self.telegram_id))
-            activity_data = response.json()
-            self.start_time = activity_data.get('start_date_local')
-            return activity_data
+            activity = response.json()
+            self.start_time = activity.get('start_date_local')
+            return activity
         else:
             logger.error(LOG_TEMPLATES['BAD_RESPONSE'].format(
                 self.telegram_id))
@@ -149,3 +150,18 @@ class APICaller:
             gpxf.write(gpx.to_xml())
         logger.info(LOG_TEMPLATES['GPX_CREATED'].format(filepath))
         return filepath
+
+    def segment(self, segment_id):
+        url = API_URLS['segment'].format(segment_id)
+        logger.debug(LOG_TEMPLATES['SEGMENT'].format(self.telegram_id))
+        response = requests.get(url, headers=self.headers)
+        if response.status_code == 200:
+            logger.debug(LOG_TEMPLATES['GOOD_RESPONSE'].format(
+                self.telegram_id))
+            segment = response.json()
+            print(segment)
+            return segment
+        else:
+            logger.error(LOG_TEMPLATES['BAD_RESPONSE'].format(
+                self.telegram_id))
+            return None

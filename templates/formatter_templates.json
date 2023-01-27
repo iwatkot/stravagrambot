@@ -17,6 +17,10 @@
             "elapsed_time": "Total time",
             "elevation_gain": "Total elevation gain"
         },
+        "acts": {
+            "date_name": "*{}* \\| `{}`\n",
+            "type_dist": "{distance} km {type} \\| more data: /activity{id}\n"
+        },
         "act": {
             "date_name": "*{}* \\| `{}`\n",
             "dist_type_elev": "`{dist} km`  {type} with  `{elev} m`  elevation gained\n",
@@ -28,8 +32,22 @@
             "elev": "*Highest elevation:* `{} m` \\| *Lowest elevation:* `{} m`\n",
             "device": "*Workout recorded with:* {}\n",
             "gear": "*Gear:* {}\n",
-            "strava_url": "[Check activity on Strava]({}{})\n\n",
-            "dl": "*Download GPX file:* /download{}"
+            "strava_url": "[Check activity on Strava]({}{})\n",
+            "dl": "\n*Download GPX file:* /download{}",
+            "avg_watts": "*Average power:* `{} W`\n",
+            "segment_list": "\n*List of segments:*\n",
+            "segment": "`{}` more data: /segment{}\n"
+        },
+        "seg": {
+            "name_type": "`{}`  \\({}\\)\n",
+            "cat": "*Climb category:*  `{}`\n",
+            "dst_elev": "*Distance:*  `{} m`  \\| *Elevation:*  `{} m`\n",
+            "grade": "*Average grade:* `{} %`  \\| *Maximum grade:*  `{} %`\n",
+            "segment_info": "*Total efforts:*  `{}`  \\| *Total athletes:*  `{}`\n",
+            "xoms": "*KOM time:*  `{}`  \\| *QOM time:*  `{}`\n",
+            "your_stats": "*Your best time:*  `{}`  \\| *Your efforts:*  `{}`\n*Best time date:*  `{}`  \\| *Activity:* /activity{}\n",
+            "local_legend": "*Local legend:*  `{}`  with  `{}`  efforts\n",
+            "strava_url": "\n[Check segment on Strava]({}{})\n"
         }
     },
     "ru": {
@@ -50,19 +68,37 @@
             "elapsed_time": "Общее время",
             "elevation_gain": "Общий набор высоты"
         },
+        "acts": {
+            "date_name": "*{}* \\| `{}`\n",
+            "type_dist": "{type} на {distance} км \\| подробнее: /activity{id}\n"
+        },
         "act": {
             "date_name": "*{}* \\| `{}`\n",
             "dist_type_elev": "{type} на  `{dist} км`  с набором высоты  `{elev} м`\n",
             "pace": "*Средний темп:*  `{}` \\| *Максимальный темп:*  `{}`\n",
-            "speed": "*Средняя скорость:*  `{} km\\/h` \\| *Максимальная скорость:*  `{} km\\/h`\n",
+            "speed": "*Средняя скорость:*  `{} км\\/ч` \\| *Максимальная скорость:*  `{} км\\/ч`\n",
             "hr": "*Средний пульс:* `{}` \\| *Максимальный пульс:* `{}`\n",
             "time": "*Время в движении:*  `{}` \\| *Общее время:*  `{}`\n",
             "idle": "*Время бездействия:*  `{}` \\| *Процент бездействия:*  `{} %`\n",
             "elev": "*Самая высокая точка:* `{} m` \\| *Самая низкая точка:* `{} m`\n",
             "device": "*Тренировка записана с помощью:* {}\n",
             "gear": "*Экипировка:* {}\n",
-            "strava_url": "[Посмотреть тренировку на сайте Strava]({}{})\n\n",
-            "dl": "*Скачать GPX файл:* /download{}"
+            "strava_url": "[Посмотреть тренировку на сайте Strava]({}{})\n",
+            "dl": "\n*Скачать GPX файл:* /download{}",
+            "avg_watts": "*Средняя мощность:* `{} Вт`\n",
+            "segment_list": "\n*Список участков:*\n",
+            "segment": "`{}` подробнее: /segment{}\n"
+        },
+        "seg": {
+            "name_type": "`{}`  \\({}\\)\n",
+            "cat": "*Категория подъёма:*  `{}`\n",
+            "dst_elev": "*Расстояние:*  `{} м`  \\| *Подъём:*  `{} м`\n",
+            "grade": "*Средний уклон:* `{} %`  \\| *Максимальный уклон:*  `{} %`\n",
+            "segment_info": "*Всего попыток:*  `{}`  \\| *Всего атлетов:*  `{}`\n",
+            "xoms": "*KOM время:*  `{}`  \\| *QOM время:*  `{}`\n",
+            "your_stats": "*Ваше лучшее время:*  `{}`  \\| *Ваши попытки:*  `{}`\n*Дата лучшего времени:*  `{}`  \\| *Тренировка:* /activity{}\n",
+            "local_legend": "*Local legend:*  `{}`  с  `{}`  попытками\n",
+            "strava_url": "\n[Посмотреть участок на сайте Strava]({}{})\n"
         },
         "types": {
             "run": "забег",

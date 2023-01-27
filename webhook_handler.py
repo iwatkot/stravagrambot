@@ -32,30 +32,40 @@ class WebHook:
         if response.status_code == 201:
             response = response.json()
             logger.debug(LOG_TEMPLATES['API_RESPONDED'].format(response))
-            self.subcription_id = response['id']
-            logger.debug(LOG_TEMPLATES['SUBSCRIPTION_ID'].format(
-                self.subcription_id))
+            try:
+                self.subcription_id = response['id']
+                logger.debug(LOG_TEMPLATES['SUBSCRIPTION_ID'].format(
+                    self.subcription_id))
+            except Exception as error:
+                logger.error(LOG_TEMPLATES['CANT_UNPACK'].format(error))
         else:
             logger.warning(LOG_TEMPLATES['BAD_RESPONSE'].format(
                 response.json()))
-            self.subcription_id = None
+        return self.subcription_id
 
     def view(self):
         logger.debug(LOG_TEMPLATES['VIEW_REQUESTED'])
         response = requests.get(self.api_url, params=self.params)
         if response.status_code == 200:
             response = response.json()
-            self.subcription_id = response[0]['id']
-            logger.debug(LOG_TEMPLATES['SUBSCRIPTION_ID'].format(
-                self.subcription_id))
+            try:
+                self.subcription_id = response[0]['id']
+                logger.debug(LOG_TEMPLATES['SUBSCRIPTION_ID'].format(
+                    self.subcription_id))
+            except Exception as error:
+                logger.error(LOG_TEMPLATES['CANT_UNPACK'].format(error))
         else:
             logger.warning(LOG_TEMPLATES['BAD_RESPONSE'].format(
                 response.json()))
             self.subcription_id = None
+        return self.subcription_id
 
     def delete(self):
         logger.debug(LOG_TEMPLATES['DELETE_REQUESTED'])
         response = requests.delete(self.api_url + '/{}'.format(
-            self.subcription_id), params=self.params).status_code
-        if response == 204:
+            self.subcription_id), params=self.params)
+        if response.status_code == 204:
             logger.debug(LOG_TEMPLATES['SUB_DELETED'])
+            return True
+        else:
+            logger.error(LOG_TEMPLATES['NO_SUB_TO_DELETE'])

@@ -1,6 +1,7 @@
 {
     "en": {
         "/start": "Hello, {}\\! You can use this bot to access your Strava data\\.\nTo start using the both please authorize it in Strava with /auth command\\.\n*Powered by Strava*\\.",
+        "TOUR": "The bot is in active development now, you can face some errors, while using the bot\\. You can also check out the [changelog](http://stravagram.space/changelog) to learn about about new features\\.",
         "/auth": "Here's your auth link: [Connect with Strava]({})\n\n_Please check all the boxes on the auth pages, otherwise the bot will not work proreply\\._",
         "NOT_FOUND_IN_DB": "The bot didn't find your Telegram ID in the database. Please authorize the bot again with the /auth command.",
         "ERROR_WHILE_REFRESHING": "The bot can't update your Strava access token due to bad response from Stava API.\nUsually it happens when you revoke the access to the bot. Please authorize the bot one more time with the /auth command.",
@@ -8,10 +9,12 @@
         "CANCELLED": "The operation was cancelled.",
         "WRONG_PERIOD": "The time period you entered is incorrect. Please try again or use /cancel.",
         "BAD_GPX_REQUEST": "The bot can't generate GPX file for this activity. Check if it has actual GPS data.",
-        "NO_ACTIVITIES": "There's no activites in the specified period of time."
+        "NO_ACTIVITIES": "There're no activites in the specified period of time.",
+        "NO_STATS": "There're no actual activities in your Stava account."
     },
     "ru": {
         "/start": "Здравствуй, {}\\! С помощью этого бота ты можешь получить доступ к своим тренировкам на Strava\\.\nЧтобы начать пользоваться ботом, используй команду /auth\\.\n*Powered by Strava*\\.",
+        "TOUR": "Бот находится в стадии активной разработки, будьте готовы столкнуться с различными ошибками\\. Чтобы узнать о новых функциях, посмотрите страницу [обновления](http://stravagram.space/changelog) на сайте бота\\.",
         "/auth": "Вот ваша ссылка для авторизации бота: [Connect with Strava]({})\n\n_Пожалуйста отметьте все пункты доступа на странице авторизации, или бот не сможешь корректно работать\\._",
         "NOT_FOUND_IN_DB": "Бот не смог найти ваш Telegram ID в базе данных. Авторизуйте бота заново с помощью команды /auth.",
         "ERROR_WHILE_REFRESHING": "Бот не смог обновить ваш уникальный токен для доступа к Strava.\nСкорее всего вы деавторизовали бота в вашей учетной записи Strava. Авторизуйте бота заново с помощью команды /auth.",
@@ -19,6 +22,15 @@
         "CANCELLED": "Операция отменена.",
         "WRONG_PERIOD": "Вы ввели некорректный промежуток времени. Пожалуйста, попробуйте еще раз или используйте команду /cancel.",
         "BAD_GPX_REQUEST": "Бот не смог сгенерировать GPX файл для данной активности. Проверьте, есть ли в этой тренировке GPS данные.",
-        "NO_ACTIVITIES": "В указанном промежутке времени нет тренировок."
+        "NO_ACTIVITIES": "В указанном промежутке времени нет тренировок.",
+        "NO_STATS": "В вашем аккаунте Strava нет подходящих тренировок."
+    },
+    "admin": {
+        "WH_SUB_GOOD": "Successfully subscribed to Webhooks with id: [{}].",
+        "WH_SUB_BAD": "There was an error while trying to subscribe to the webhooks, check the logs with /logs command.",
+        "WH_VIEW_GOOD": "There's an active webhook subscription with ID: [{}].",
+        "WH_VIEW_BAD": "There's no active webhook subscription.",
+        "WH_DEL_GOOD": "Successfully deleted webhook subscription.",
+        "WH_DEL_BAD": "There was an error while trying to delete subscription to the webhooks, check the logs with /logs command."
     }
 }

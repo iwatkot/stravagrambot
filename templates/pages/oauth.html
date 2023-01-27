@@ -1,12 +1,22 @@
 {% extends 'pages/base.html' %}
-{% block title %}StravaGram: {{ result }}{% endblock title %}
+{% block title %}StravaGram - {{ result }}{% endblock title %}
+{% block about %}{{ context['about'] }}{% endblock %}
+{% block changelog %}{{ context['changelog'] }}{% endblock %}
 {% block content  %}
-<div class="card text-center">
-  <div class="card-body">
-    <h5 class="card-title">{{ result }}</h5>
-      <p class="card-text">
-        {{ message }}
-      </p>
-  </div>
-</div>
+<main role='main' class='container'>
+  <div class="row">
+    <div class="col"></div>
+    <div class="col-7">
+      <div class="card text-center">
+        <img class="card-img-top width 200" src="/static/stravagram-colored-wide.png" alt="Card image cap">
+        <div class="card-body">
+          <h5 class="card-title">{{ result }}</h5>
+          <p class="card-text">
+            {{ message }}
+          </p>
+        </div>
+      </div>    
+    </div>
+  <div class="col"></div>
+</main>
 {% endblock content %}

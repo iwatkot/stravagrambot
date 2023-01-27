@@ -1,5 +1,4 @@
 {
-    "log_formatter": "%(name)s | %(asctime)s | %(levelname)s | %(message)s",
     "database_handler": {
         "DB_INIT_TELEGRAM_ID": "The Database initiated with Telegram ID: [{}].",
         "DB_INIT_AUTH_DATA": "The Database initiated with auth_data for Telegram ID: [{}].",
@@ -27,7 +26,8 @@
         "GOOD_REQUEST": "Good request recieved from Telegram ID: [{}] with code: [{}].",
         "OAUTH_FAILED": "OAuth failed due to None response from API.",
         "NOT_CONNECTED": "The connection to the database wasn't established due to an error.",
-        "RETURNING_HUB_CHALLENGE": "Server returning hub challenge [{}] to the API."
+        "RETURNING_HUB_CHALLENGE": "Server returning hub challenge [{}] to the API.",
+        "WEBHOOK_RECIEVED": "Server recived webhook from Strava: [{}]."
     },
     "token_handler": {
         "TOKEN_INIT_CODE": "OAuth initiated for Telegram ID: [{}] with code: [{}].",
@@ -42,7 +42,9 @@
         "SUB_DELETED": "Subscription to the webhooks successfully deleted.",
         "API_RESPONDED": "Webhook API responded with: [{}].",
         "SUBSCRIPTION_ID": "Webhook API returned subscription ID: [{}]." ,
-        "BAD_RESPONSE": "The API returned bad response: [{}]."
+        "BAD_RESPONSE": "The API returned bad response: [{}].",
+        "CANT_UNPACK": "Can't unpack request from API with error: [{}].",
+        "NO_SUB_TO_DELETE": "Bot tried to delete subscription while it's no active subscription."
     },
     "api": {
         "UPDATE_TOCKEN_FAILED": "The update of the token for Telegram ID: [{}] has failed due to bad API response.",
@@ -58,9 +60,24 @@
         "TOKEN_RETRIEVED": "The acccess token successfully retrieved for the Telegram ID: [{}].",
         "GPX_STARTED": "GPX creating started for the strava activity with ID: [{}].",
         "GPX_RETRIEVE_ERROR": "Can't extract the correct data from the API response for activity with ID: [{}].",
-        "GPX_CREATED": "GPX file successfully created with filename: [{}]."
+        "GPX_CREATED": "GPX file successfully created with filename: [{}].",
+        "SEGMENT": "Calling the API with segment request for Telegram ID: [{}]."
     },
     "main": {
         "MESSAGE_FROM_USER": "The telegram user with ID [{}] send bot the message: [{}]."
+    },
+    "format_handler": {
+        "stats_init": "Starting formatting stats for period [{}] with language [{}].",
+        "stats_sent": "Finished formatting stats for period [{}] with language [{}].",
+        "stats_none": "There's no stats for period [{}] with language [{}].",
+        "activities_init": "Starting formatting activities with language [{}].",
+        "activities_sent": "Finished formatting activities with language [{}].",
+        "activities_none": "There's no activities with language [{}].",
+        "activity_init": "Starting formatting activity with language [{}].",
+        "activity_sent": "Finished formatting activity with language [{}].",
+        "activity_none": "There's no activity with language [{}].",
+        "segment_init": "Starting formatting segment with language [{}].",
+        "segment_sent": "Finished formatting segment with language [{}].",
+        "segment_none": "There's no segment with language [{}]."
     }
 }

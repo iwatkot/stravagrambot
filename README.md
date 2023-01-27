@@ -31,12 +31,17 @@ _later_
 ## Admin commands
 
 ## To-Do
-- Commands for accessing segments on Strava.<br>
+- Content in about wepgages.<br>
+- README.md<br>
+- Commands for accessing starred segments on Strava.<br>
 - Commands for accessing athlete's gear<br>
 - Commands for accessing athlete's routes<br>
 
 
 ## Changelog
+**2023/01/27** - Added segements to the activity, added /segment command to check the segments. Added logger to the format_handler.<br>
+**2023/01/26** - Fixed bug when /stats won't show info at all (or shows icorrect data).<br>
+**2023/01/26** - Added `ru` locale for /find and /recent commands. Added locale to the webpages. Added admin commands for the webhook actions (subscribe, view, delete).<br>
 **2023/01/25** - Added `ru` locale for /activity data.<br>
 **2023/01/25** - Added HR and elevation data to the activities.<br>
 **2023/01/25** - Added dialog for incorrect /find inputs. Now the bot will wait for correct data till user will input it or use the /cancel command.<br>

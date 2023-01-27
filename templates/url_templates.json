@@ -7,10 +7,12 @@
         "get_stats": "https://www.strava.com/api/v3/athletes/{}/stats",
         "activities": "https://www.strava.com/api/v3/athlete/activities",
         "activity": "https://www.strava.com/api/v3/activities/{}",
-        "streams": "https://www.strava.com/api/v3/activities/{}/streams"
+        "streams": "https://www.strava.com/api/v3/activities/{}/streams",
+        "segment": "https://www.strava.com/api/v3/segments/{}"
     },
     "formatter": {
         "activity_url": "https://www\\.strava\\.com/activities/",
-        "user_profile_url": "https://www.strava.com/athletes/"
+        "user_profile_url": "https://www.strava.com/athletes/",
+        "segment_url": "https://www\\.strava\\.com/segments/"
     }
 }
