@@ -68,16 +68,14 @@ def oauth():
 
 @app.route('/')
 def index_page():
-    lang = 'ru' if request.accept_languages.best_match(
-        SUPPORTED_LANGUAGES) == 'ru' else 'en'
+    lang = locale_check(request)
     context = FLASK_TEMPLATES['locale'][lang]
     return render_template('pages/index.html', context=context)
 
 
 @app.route('/about')
 def about_page():
-    lang = 'ru' if request.accept_languages.best_match(
-        SUPPORTED_LANGUAGES) == 'ru' else 'en'
+    lang = locale_check(request)
     context = FLASK_TEMPLATES['locale'][lang]
     content = get_content('about', lang)
     return render_template('pages/about.html', context=context,
@@ -86,12 +84,17 @@ def about_page():
 
 @app.route('/changelog')
 def changelog_page():
-    lang = 'ru' if request.accept_languages.best_match(
-        SUPPORTED_LANGUAGES) == 'ru' else 'en'
+    lang = locale_check(request)
     context = FLASK_TEMPLATES['locale'][lang]
     content = get_content('changelog', lang)
     return render_template('pages/changelog.html', context=context,
                            content=content)
+
+
+def locale_check(request):
+    lang = 'ru' if request.accept_languages.best_match(
+        SUPPORTED_LANGUAGES) == 'ru' else 'en'
+    return lang
 
 
 def oauth_init(telegram_id, code):
