@@ -39,11 +39,7 @@ def format_stats(stats, period, lang):
             section['header'] = v
             insert_idle(section)
             if divider:
-                for k, v in section.items():
-                    if k in FORMATTER_TEMPLATES['convert_keys']['time']:
-                        section[k] = round((v) / divider)
-                    elif k in FORMATTER_TEMPLATES['relative_keys']:
-                        section[k] = round((v) / divider, 2)
+                divide_stats(section, divider)
             value_formatter(section, modify=True)
             data.append(section)
     message = ''
@@ -142,25 +138,6 @@ def segment(segment, lang='en'):        # REFACTOR
         return message
 
 
-def timez_formatter(timestr):
-    unpacked_time = datetime.strptime(timestr, '%Y-%m-%dT%H:%M:%SZ')
-    return escape(datetime.strftime(unpacked_time, '%Y-%m-%d %H:%m'))
-
-
-def speed_formatter(speed):
-    return escape(str(round(speed * 3.6, 2)))
-
-
-def distance_formatter(distance):
-    return escape(str(round(distance / 1000, 2)))
-
-
-def pace_formatter(speed):
-    pace = datetime.strptime((
-        str(timedelta(seconds=(round(1000 / speed))))), '%H:%M:%S')
-    return escape(datetime.strftime(pace, '%M:%S'))
-
-
 def value_formatter(data: dict, modify: bool):
     """Modifies the values in the dictonary with specific rules.
     Speed(m/s) to km/h. Time(s) to timedelta. Distance(m) to km.
@@ -173,11 +150,12 @@ def value_formatter(data: dict, modify: bool):
         if key in FORMATTER_TEMPLATES['convert_keys']['time']:
             data[key] = str(timedelta(seconds=value))
         elif key in FORMATTER_TEMPLATES['convert_keys']['distance']:
-            data[key] = distance_formatter(value)
+            data[key] = escape(str(round(value / 1000, 2)))
         elif key in FORMATTER_TEMPLATES['convert_keys']['speed']:
-            data[key] = speed_formatter(value)
+            data[key] = escape(str(round(value * 3.6, 2)))
         elif key in FORMATTER_TEMPLATES['convert_keys']['date']:
-            data[key] = timez_formatter(value)
+            time = datetime.fromisoformat(value)
+            data[key] = escape(datetime.strftime(time, '%Y-%m-%d %H:%M'))
         else:
             data[key] = escape(str(value).strip())
     return data
@@ -189,6 +167,12 @@ def insert_idle(data: dict):
     idle_percent = round((idle_time / data.get('elapsed_time')) * 100, 2)
     data['idle_time'] = idle_time
     data['idle_percent'] = idle_percent
+
+
+def pace_formatter(speed):
+    pace = datetime.strptime((
+        str(timedelta(seconds=(round(1000 / speed))))), '%H:%M:%S')
+    return escape(datetime.strftime(pace, '%M:%S'))
 
 
 def insert_pace(data: dict):
@@ -221,6 +205,15 @@ def use_format_template(data: dict, lang: str, type: str, segment_data=None):
             message += format_template['segment_data']['segment'].format(
                 segment_name, segment_id)
     return message
+
+
+def divide_stats(data: dict, divider: int):
+    """Divides specific stat values with divide value."""
+    for k, v in data.items():
+        if k in FORMATTER_TEMPLATES['convert_keys']['time']:
+            data[k] = round((v) / divider)
+        elif k in FORMATTER_TEMPLATES['relative_keys']:
+            data[k] = round((v) / divider, 2)
 
 
 def format_users(users):
