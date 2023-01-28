@@ -69,7 +69,7 @@ def format_stats(stats, period, lang):
         return message
 
 
-def activities(activities, lang='en'):
+def activities(activities, lang='en'):      # REFACTOR
     if activities:
         logger.debug(LOG_TEMPLATES['activities_init'].format(lang))
         message = ''
@@ -98,6 +98,11 @@ def format_activity(activity, lang):
     logger.debug(LOG_TEMPLATES['activity_init'].format(lang))
     USEFUL_DATA = FORMATTER_TEMPLATES['useful_data']['activity']
     raw_data = {k: activity.get(k) for k in USEFUL_DATA if activity.get(k)}
+    if lang != 'en':
+        localed_activity = FORMATTER_TEMPLATES[lang]['types'].get(
+                    raw_data['type'].lower())
+        if localed_activity:
+            raw_data['type'] = localed_activity
     idle_time = raw_data.get('elapsed_time') - raw_data.get('moving_time')
     idle_percent = round((idle_time / raw_data.get('elapsed_time')) * 100, 2)
     raw_data['idle_time'] = idle_time
@@ -134,7 +139,7 @@ def format_activity(activity, lang):
     return message
 
 
-def segment(segment, lang='en'):
+def segment(segment, lang='en'):        # REFACTOR
     if segment:
         logger.debug(LOG_TEMPLATES['segment_init'].format(lang))
         useful_data = ['id', 'name', 'activity_type', 'distance',

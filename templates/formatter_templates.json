@@ -21,13 +21,6 @@
                     "ytd_run_totals": "Average run stats per week"}
             }
         },
-        "stats_for_humans": {
-            "count": "Number",
-            "distance": "Distance",
-            "moving_time": "Moving time",
-            "elapsed_time": "Total time",
-            "elevation_gain": "Total elevation gain"
-        },
         "acts": {
             "date_name": "*{}* \\| `{}`\n",
             "type_dist": "{distance} km {type} \\| more data: /activity{id}\n"
@@ -74,42 +67,57 @@
     },
     "ru": {
         "stats": {
-            "all_ride_totals": "Статистика заездов за все время",
-            "all_run_totals": "Статистика забегов за все время",
-            "ytd_ride_totals": "Статистика заездов в этом году",
-            "ytd_run_totals": "Статистика забегов в этом году"
-        },
-        "weekavg": {
-            "ytd_ride_totals": "Еженедельная статистика заездов в этом году",
-            "ytd_run_totals": "Еженедельная статистика забегов в этом году"
-        },
-        "stats_for_humans": {
-            "count": "Количество",
-            "distance": "Расстояние",
-            "moving_time": "Время в движении",
-            "elapsed_time": "Общее время",
-            "elevation_gain": "Общий набор высоты"
+            "header": "`{}`\n",
+            "count": "*Количество:*  `{}` \\| ",
+            "distance": "*Расстояние:*  `{}`  km\n",
+            "moving_time": "*В движении:*  `{}` \\| ",
+            "elapsed_time": "*Общее время:*  `{}`\n",
+            "idle_time": "*Бездействие:*  `{}` \\| ",
+            "idle_percent": "*Процент бездействия:*  `{} %`\n",
+            "elevation_gain": "*Наборы высоты:*  `{} m`\n\n",
+            "periods": {
+                "all": {
+                    "all_ride_totals": "Статистика заездов за все время",
+                    "all_run_totals": "Статистика забегов за все время"},
+                "year": {
+                    "ytd_ride_totals": "Статистика заездов в этом году",
+                    "ytd_run_totals": "Статистика забегов в этом году"},
+                "week": {
+                    "ytd_ride_totals": "Статистика заездов по неделям",
+                    "ytd_run_totals": "Статистика забегов по неделям"}
+            }
         },
         "acts": {
             "date_name": "*{}* \\| `{}`\n",
             "type_dist": "{type} на {distance} км \\| подробнее: /activity{id}\n"
         },
-        "act": {
-            "date_name": "*{}* \\| `{}`\n",
-            "dist_type_elev": "{type} на  `{dist} км`  с набором высоты  `{elev} м`\n",
-            "pace": "*Средний темп:*  `{}` \\| *Максимальный темп:*  `{}`\n",
-            "speed": "*Средняя скорость:*  `{} км\\/ч` \\| *Максимальная скорость:*  `{} км\\/ч`\n",
-            "hr": "*Средний пульс:* `{}` \\| *Максимальный пульс:* `{}`\n",
-            "time": "*Время в движении:*  `{}` \\| *Общее время:*  `{}`\n",
-            "idle": "*Время бездействия:*  `{}` \\| *Процент бездействия:*  `{} %`\n",
-            "elev": "*Самая высокая точка:* `{} m` \\| *Самая низкая точка:* `{} m`\n",
-            "device": "*Тренировка записана с помощью:* {}\n",
-            "gear": "*Экипировка:* {}\n",
-            "strava_url": "[Посмотреть тренировку на сайте Strava]({}{})\n",
-            "dl": "\n*Скачать GPX файл:* /download{}",
-            "avg_watts": "*Средняя мощность:* `{} Вт`\n",
-            "segment_list": "\n*Список участков:*\n",
-            "segment": "`{}` подробнее: /segment{}\n"
+        "activity": {
+            "start_date_local": "*{}* \\| ",
+            "name": " `{}`\n",
+            "description": "_{}_\n",
+            "distance": "`{} км`  ",
+            "type": "{} ",
+            "total_elevation_gain": "с  `{} м`  набора высоты\n",
+            "average_watts": "*Средняя мощность:* `{} Вт`\n",
+            "average_pace": "*Средний темп:*  `{}` \\| ",
+            "max_pace": "*Максимальный темп:*  `{}`\n",
+            "average_speed": "*Средняя скорость:*  `{} км\\/ч` \\| ",
+            "max_speed": "*Максимальная скорость:*  `{} км\\/ч`\n",
+            "average_heartrate": "*Средний пульс:* `{}` \\| ",
+            "max_heartrate": "*Максимальный пульс:* `{}`\n",
+            "moving_time": "*В движении:*  `{}` \\| ",
+            "elapsed_time": "*Общее время:*  `{}`\n",
+            "idle_time": "*Бездействие:*  `{}` \\| ",
+            "idle_percent": "*Процент бездействия:*  `{} %`\n",
+            "elev_high": "*Высшая точка:* `{} м` \\| ",
+            "elev_low": "*Низшая точка:* `{} м`\n",
+            "device_name": "*Тренировка записана с помощью:* {}\n",
+            "gear_nickname": "*Экипировка:* {}\n",
+            "url": "\n[Посмотреть тренировку на сайте Strava]({})\n",
+            "download": "\n*Скачать GPX файл:* /download{}\n",
+            "segment_data": {
+                "segment_list": "\n*Участки в тренировке:*\n",
+                "segment": "`{}` подробнее: /segment{}\n"}
         },
         "seg": {
             "name_type": "`{}`  \\({}\\)\n",
