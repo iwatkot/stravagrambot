@@ -21,22 +21,33 @@
             "date_name": "*{}* \\| `{}`\n",
             "type_dist": "{distance} km {type} \\| more data: /activity{id}\n"
         },
-        "act": {
-            "date_name": "*{}* \\| `{}`\n",
-            "dist_type_elev": "`{dist} km`  {type} with  `{elev} m`  elevation gained\n",
-            "pace": "*Average pace:*  `{}` \\| *Maximum pace:*  `{}`\n",
-            "speed": "*Average speed:*  `{} km\\/h` \\| *Maximum speed:*  `{} km\\/h`\n",
-            "hr": "*Average HR:* `{}` \\| *Maximum HR:* `{}`\n",
-            "time": "*Moving time:*  `{}` \\| *Elapsed time:*  `{}`\n",
-            "idle": "*Idle time:*  `{}` \\| *Idle percent:*  `{} %`\n",
-            "elev": "*Highest elevation:* `{} m` \\| *Lowest elevation:* `{} m`\n",
-            "device": "*Workout recorded with:* {}\n",
-            "gear": "*Gear:* {}\n",
-            "strava_url": "[Check activity on Strava]({}{})\n",
-            "dl": "\n*Download GPX file:* /download{}",
-            "avg_watts": "*Average power:* `{} W`\n",
-            "segment_list": "\n*List of segments:*\n",
-            "segment": "`{}` more data: /segment{}\n"
+        "activity": {
+            "start_date_local": "*{}* \\| ",
+            "name": " `{}`\n",
+            "description": "_{}_\n",
+            "distance": "`{} km`  ",
+            "type": "{} ",
+            "total_elevation_gain": "with  `{} m`  elevation gained\n",
+            "average_watts": "*Average power:* `{} W`\n",
+            "average_pace": "*Average pace:*  `{}` \\| ",
+            "max_pace": "*Maximum pace:*  `{}`\n",
+            "average_speed": "*Average speed:*  `{} km\\/h` \\| ",
+            "max_speed": "*Maximum speed:*  `{} km\\/h`\n",
+            "average_heartrate": "*Average HR:* `{}` \\| ",
+            "max_heartrate": "*Maximum HR:* `{}`\n",
+            "moving_time": "*Moving time:*  `{}` \\| ",
+            "elapsed_time": "*Elapsed time:*  `{}`\n",
+            "idle_time": "*Idle time:*  `{}` \\| ",
+            "idle_percent": "*Idle percent:*  `{} %`\n",
+            "elev_high": "*Highest elevation:* `{} m` \\| ",
+            "elev_low": "*Lowest elevation:* `{} m`\n",
+            "device_name": "*Workout recorded with:* {}\n",
+            "gear_nickname": "*Gear:* {}\n",
+            "url": "\n[Check activity on Strava]({})\n",
+            "download": "\n*Download GPX file:* /download{}\n",
+            "segment_data": {
+                "segment_list": "\n*Segments in activity:*\n",
+                "segment": "`{}` more data: /segment{}\n"}
         },
         "seg": {
             "name_type": "`{}`  \\({}\\)\n",
@@ -105,5 +116,17 @@
             "ride": "заезд"
         }
     },
-    "pace_act": ["run", "забег"]
+    "useful_data": {
+        "activity": [
+            "start_date_local", "name", "description", "id", "distance", "type", "average_speed", "max_speed",
+            "total_elevation_gain", "moving_time", "elapsed_time", "device_name", "gear", "has_heartrate",
+            "average_heartrate", "max_heartrate", "elev_high", "elev_low", "average_watts", "segment_efforts"
+        ]
+    },
+    "convertible_keys": {
+        "time": ["moving_time", "elapsed_time", "idle_time"],
+        "distance": ["distance"],
+        "speed": ["average_speed", "max_speed"],
+        "date": ["start_date_local"]
+    }
 }

@@ -1,3 +1,4 @@
+import asyncio
 import re
 import os
 
@@ -35,66 +36,68 @@ class Form(StatesGroup):
     find = State()
 
 
-@dp.message_handler(commands=["start"])
-async def start_handler(message: types.Message):
-    # Handles the '/start' command.
-    telegram_id, lang, user_name = unpack_message(message)
-    await message.reply(BOT_TEMPLATES[lang][message.text].format(user_name),
-                        parse_mode='MarkdownV2')
-    await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['TOUR'],
-                           parse_mode='MarkdownV2')
+class Replyer:
+    def __init__(self, message):
+        self.message = message
+        self.telegram_id = message.from_user.id
+        lang = self.message.from_user.language_code
+        self.lang = lang if lang == 'ru' else 'en'
+        self.first_name = message.from_user.first_name
+
+    async def basic_commands(self):
+        basic_command = self.message.get_command()
+        if basic_command == '/start':
+            await self.message.reply(
+                BOT_TEMPLATES[self.lang][self.message.text].format(
+                    self.first_name), parse_mode='MarkdownV2')
+            await asyncio.sleep(3)
+            await bot.send_message(
+                self.telegram_id, BOT_TEMPLATES[self.lang]['TOUR'],
+                parse_mode='MarkdownV2')
+        elif basic_command == '/auth':
+            auth_url = URL_TEMPLATES['oauth']['access_request'].format(
+                self.telegram_id)
+            await self.message.reply(
+                BOT_TEMPLATES[self.lang][self.message.text].format(auth_url),
+                parse_mode='MarkdownV2')
+        elif basic_command == '/recent':
+            caller = APICaller(telegram_id=self.telegram_id)
+            activities = caller.activities()
+            formatted_activities = formatter.activities(
+                activities=activities, lang=self.lang)
+            if formatted_activities:
+                await bot.send_message(self.telegram_id, formatted_activities,
+                                       parse_mode='MarkdownV2')
+            else:
+                await bot.send_message(
+                    self.telegram_id,
+                    BOT_TEMPLATES[self.lang]['NO_ACTIVITIES'])
+
+    async def stats_commands(self):
+        stats_command = self.message.get_command()
+        caller = APICaller(telegram_id=self.telegram_id)
+        stats = caller.get_stats()
+        periods = BOT_TEMPLATES['constants']['periods']
+        period = periods.get(stats_command)
+        formatted_stats = formatter.stats(stats, period)
+        if formatted_stats:
+            await bot.send_message(
+                self.telegram_id, formatted_stats, parse_mode='MarkdownV2')
+        else:
+            await bot.send_message(
+                self.telegram_id, BOT_TEMPLATES[self.lang]['NO_STATS'])
 
 
-@dp.message_handler(commands=["auth"])
-async def auth_handler(message: types.Message):
-    # Handles the '/auth' command.
-    telegram_id, lang, user_name = unpack_message(message)
-    auth_url = URL_TEMPLATES['oauth']['access_request'].format(telegram_id)
-    await message.reply(BOT_TEMPLATES[lang][message.text].format(auth_url),
-                        parse_mode='MarkdownV2')
+@dp.message_handler(commands=["start", "auth", "recent"])
+async def basic_commands(message: types.Message):
+    r = Replyer(message)
+    await r.basic_commands()
 
 
-@dp.message_handler(regexp_commands=[r'/stats?(?P<period>\w+)'])
-async def stats_handler(message: types.Message, regexp_command: re.Match[str]):
-    # Handles the '/stats' command.
-    period = regexp_command['period']
-    telegram_id, lang, user_name = unpack_message(message)
-    caller = APICaller(telegram_id=telegram_id)
-    stats = caller.get_stats()
-    formated_stats = formatter.stats(stats, lang=lang, period=period)
-    if formated_stats:
-        await bot.send_message(
-            telegram_id, formated_stats, parse_mode='MarkdownV2')
-    else:
-        await bot.send_message(
-            telegram_id, BOT_TEMPLATES[lang]['NO_STATS'])
-
-
-@dp.message_handler(commands=["weekavg"])
-async def weekavg_handler(message: types.Message):
-    # Handles the '/stats' command.
-    telegram_id, lang, user_name = unpack_message(message)
-    caller = APICaller(telegram_id=telegram_id)
-    stats = caller.get_stats()
-    formated_stats = formatter.stats(stats, lang=lang, period='week')
-    await bot.send_message(
-        telegram_id, formated_stats, parse_mode='MarkdownV2')
-
-
-@dp.message_handler(commands=["recent"])
-async def recent_handler(message: types.Message):
-    # Handles the '/recent' command.
-    telegram_id, lang, user_name = unpack_message(message)
-    caller = APICaller(telegram_id=telegram_id)
-    activities = caller.activities()
-    if not activities:
-        await bot.send_message(
-            telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITIES'])
-    else:
-        formatted_activities = formatter.activities(
-            activities=activities, lang=lang)
-        await bot.send_message(telegram_id, formatted_activities,
-                               parse_mode='MarkdownV2')
+@dp.message_handler(commands=["statsall", "statsyear", "weekavg"])
+async def stats_handler(message: types.Message):
+    r = Replyer(message)
+    await r.stats_commands()
 
 
 @dp.message_handler(regexp_commands=[r'/activity?(?P<activity_id>\w+)'])
@@ -105,7 +108,7 @@ async def activity_handler(message: types.Message,
     telegram_id, lang, user_name = unpack_message(message)
     caller = APICaller(telegram_id=telegram_id)
     activity = caller.activity(activity_id)
-    formatted_activity = formatter.activity(activity=activity, lang=lang)
+    formatted_activity = formatter.format_activity(activity, lang)
     await bot.send_message(telegram_id, formatted_activity,
                            parse_mode='MarkdownV2')
 
@@ -124,8 +127,8 @@ async def segment_handler(message: types.Message,
 
 
 @dp.message_handler(regexp_commands=[r'/download?(?P<activity_id>\w+)'])
-async def tests_handler(message: types.Message,
-                        regexp_command: re.Match[str]):
+async def gpx_handler(message: types.Message,
+                      regexp_command: re.Match[str]):
     activity_id = regexp_command['activity_id']
     telegram_id, lang, user_name = unpack_message(message)
     caller = APICaller(telegram_id=telegram_id)

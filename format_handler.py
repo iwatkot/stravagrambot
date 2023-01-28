@@ -96,96 +96,44 @@ def activities(activities, lang='en'):
         return message
 
 
-def activity(activity, lang='en'):
-    if activity:
-        logger.debug(LOG_TEMPLATES['activity_init'].format(lang))
-        useful_data = ['start_date_local', 'name', 'description', 'id',
-                       'distance', 'type', 'average_speed', 'max_speed',
-                       'total_elevation_gain', 'moving_time', 'elapsed_time',
-                       'device_name', 'gear', 'has_heartrate',
-                       'average_heartrate', 'max_heartrate',
-                       'elev_high', 'elev_low', 'average_watts',
-                       'segment_efforts']
-        activity_data = {k: activity.get(k) for k in useful_data}
-        activity_type = activity_data.get('type').lower()
-        id = activity_data.get('id')
-        moving_time = activity_data.get('moving_time')
-        elapsed_time = activity_data.get('elapsed_time')
-        idle_time = elapsed_time - moving_time
-        average_speed = activity_data.get('average_speed')
-        maximum_speed = activity_data.get('max_speed')
-        elevation = activity_data.get('total_elevation_gain')
-        description = activity_data.get('description')
-        gear = activity_data.get('gear')
-        highest_elev = activity_data.get('elev_high')
-        lowest_elev = activity_data.get('elev_low')
-        average_watts = activity_data.get('average_watts')
-        segment_efforts = activity_data.get('segment_efforts')
-        if lang != 'en':
-            localed_activity = FORMATTER_TEMPLATES[lang]['types'].get(
-                activity_type)
-            if localed_activity:
-                activity_type = localed_activity
-        if gear:
-            gear_nickname = gear.get('nickname')
+def format_activity(activity, lang):
+    logger.debug(LOG_TEMPLATES['activity_init'].format(lang))
+    useful_data = FORMATTER_TEMPLATES['useful_data']['activity']
+    raw_data = {k: activity.get(k) for k in useful_data if activity.get(k)}
+    idle_time = raw_data.get('elapsed_time') - raw_data.get('moving_time')
+    idle_percent = round((idle_time / raw_data.get('elapsed_time')) * 100, 2)
+    raw_data['idle_time'] = idle_time
+    raw_data['idle_percent'] = idle_percent
+    raw_data['average_pace'] = pace_formatter(raw_data.get('average_speed'))
+    raw_data['max_pace'] = pace_formatter(raw_data.get('max_speed'))
+    raw_data['gear_nickname'] = raw_data.get('gear').get('nickname')
+    data = {}
+    for k, v in raw_data.items():
+        if k in FORMATTER_TEMPLATES['convertible_keys']['time']:
+            data[k] = str(timedelta(seconds=v))
+        elif k in FORMATTER_TEMPLATES['convertible_keys']['distance']:
+            data[k] = distance_formatter(v)
+        elif k in FORMATTER_TEMPLATES['convertible_keys']['speed']:
+            data[k] = speed_formatter(v)
+        elif k in FORMATTER_TEMPLATES['convertible_keys']['date']:
+            data[k] = timez_formatter(v)
         else:
-            gear_nickname = None
-        device_name = activity_data.get('device_name')
-        message = ''
-        message += FORMATTER_TEMPLATES[lang]['act']['date_name'].format(
-            timez_formatter(activity_data.get('start_date_local')),
-            escape(activity_data.get('name').strip()))
-        if description:
-            message += '_{}_\n'.format(escape(description))
-        message += FORMATTER_TEMPLATES[lang]['act']['dist_type_elev'].format(
-            dist=distance_formatter(activity_data.get('distance')),
-            type=activity_type, elev=escape(str(round(elevation))))
-        if average_watts:
-            message += FORMATTER_TEMPLATES[lang]['act']['avg_watts'].format(
-                average_watts)
-        if average_speed and maximum_speed:
-            if activity_type in FORMATTER_TEMPLATES['pace_act']:
-                message += FORMATTER_TEMPLATES[lang]['act']['pace'].format(
-                    pace_formatter(average_speed),
-                    pace_formatter(maximum_speed))
-            else:
-                message += FORMATTER_TEMPLATES[lang]['act']['speed'].format(
-                    speed_formatter(average_speed),
-                    speed_formatter(maximum_speed))
-        if activity_data.get('has_heartrate'):
-            average_heartrate = activity_data.get('average_heartrate')
-            maximum_heartrate = activity_data.get('max_heartrate')
-            message += FORMATTER_TEMPLATES[lang]['act']['hr'].format(
-                average_heartrate, maximum_heartrate)
-        message += FORMATTER_TEMPLATES[lang]['act']['time'].format(
-            timedelta(seconds=moving_time), timedelta(seconds=elapsed_time))
-        message += FORMATTER_TEMPLATES[lang]['act']['idle'].format(
-            timedelta(seconds=idle_time),
-            escape(str(round((idle_time / elapsed_time) * 100, 2))))
-        if highest_elev and lowest_elev:
-            message += FORMATTER_TEMPLATES[lang]['act']['elev'].format(
-                highest_elev, lowest_elev)
-        if device_name:
-            message += FORMATTER_TEMPLATES[lang]['act']['device'].format(
-                escape(device_name))
-        if gear_nickname:
-            message += FORMATTER_TEMPLATES[lang]['act']['gear'].format(
-                escape(gear_nickname))
-        message += FORMATTER_TEMPLATES[lang]['act']['strava_url'].format(
-            FORMATTER_URLS['activity_url'], id)
-        if segment_efforts:
-            message += FORMATTER_TEMPLATES[lang]['act']['segment_list']
-            for segment in segment_efforts:
-                segment_name = segment['segment'].get('name')
-                segment_id = segment['segment'].get('id')
-                message += FORMATTER_TEMPLATES[lang]['act']['segment'].format(
-                    segment_name, segment_id)
-        message += FORMATTER_TEMPLATES[lang]['act']['dl'].format(id)
-        if not message:
-            logger.warning(LOG_TEMPLATES['activities_none'].format(lang))
-        else:
-            logger.debug(LOG_TEMPLATES['activities_sent'].format(lang))
-        return message
+            data[k] = escape(str(v).strip())
+    data['url'] = FORMATTER_URLS['activity_url'] + str(raw_data.get('id'))
+    data['download'] = raw_data.get('id')
+    format_template = FORMATTER_TEMPLATES[lang]['activity']
+    message = ''
+    for key in format_template:
+        if data.get(key):
+            message += format_template[key].format(data[key])
+    if raw_data.get('segment_efforts'):
+        message += format_template['segment_data']['segment_list']
+        for segment in raw_data.get('segment_efforts'):
+            segment_name = segment['segment'].get('name')
+            segment_id = segment['segment'].get('id')
+            message += format_template['segment_data']['segment'].format(
+                segment_name, segment_id)
+    return message
 
 
 def segment(segment, lang='en'):

@@ -32,5 +32,12 @@
         "WH_VIEW_BAD": "There's no active webhook subscription.",
         "WH_DEL_GOOD": "Successfully deleted webhook subscription.",
         "WH_DEL_BAD": "There was an error while trying to delete subscription to the webhooks, check the logs with /logs command."
+    },
+    "constants": {
+        "periods": {
+            "/statsall": "all",
+            "/statsyear": "year",
+            "/weekavg": "week"
+        }
     }
 }
