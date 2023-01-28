@@ -68,16 +68,8 @@
     },
     "format_handler": {
         "stats_init": "Starting formatting stats for period [{}] with language [{}].",
-        "stats_sent": "Finished formatting stats for period [{}] with language [{}].",
-        "stats_none": "There's no stats for period [{}] with language [{}].",
         "activities_init": "Starting formatting activities with language [{}].",
-        "activities_sent": "Finished formatting activities with language [{}].",
-        "activities_none": "There's no activities with language [{}].",
         "activity_init": "Starting formatting activity with language [{}].",
-        "activity_sent": "Finished formatting activity with language [{}].",
-        "activity_none": "There's no activity with language [{}].",
-        "segment_init": "Starting formatting segment with language [{}].",
-        "segment_sent": "Finished formatting segment with language [{}].",
-        "segment_none": "There's no segment with language [{}]."
+        "segment_init": "Starting formatting segment with language [{}]."
     }
 }

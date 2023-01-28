@@ -79,7 +79,7 @@ class Replyer:
         stats = caller.get_stats()
         periods = BOT_TEMPLATES['constants']['periods']
         period = periods.get(stats_command)
-        formatted_stats = formatter.stats(stats, period)
+        formatted_stats = formatter.format_stats(stats, period, self.lang)
         if formatted_stats:
             await bot.send_message(
                 self.telegram_id, formatted_stats, parse_mode='MarkdownV2')

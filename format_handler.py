@@ -26,45 +26,47 @@ FORMATTER_TEMPLATES = get_template('formatter_templates')
 LOG_TEMPLATES = get_template('log_templates')['format_handler']
 
 
-def stats(stats, period, lang='en'):
+def format_stats(stats, period, lang):
     logger.debug(LOG_TEMPLATES['stats_init'].format(period, lang))
+    useful_data = FORMATTER_TEMPLATES[lang]['stats']['periods'][period]
+    divider = None
     if period == 'week':
-        data_dict = FORMATTER_TEMPLATES[lang]['weekavg'].copy()
-        today = datetime.date(datetime.now())
-        divider = today.isocalendar().week
-    else:
-        data_dict = FORMATTER_TEMPLATES[lang]['stats'].copy()
-        if period == 'year':
-            del data_dict['all_ride_totals']
-            del data_dict['all_run_totals']
-        divider = 1
-    message = ''
-    for k, v in data_dict.items():
-        stat_dict = stats.get(k)
-        count = stat_dict.get('count')
-        if count:
-            message += '`{}`\n'.format(v)
-            for k, v in stat_dict.items():
-                message += "*{}*: ".format(
-                    FORMATTER_TEMPLATES[lang]['stats_for_humans'][k])
-                if 'distance' in k:
-                    v = v / divider
-                    message += "`{} km`\n".format(distance_formatter(v))
-                elif 'time' in k:
-                    v = round(v / divider)
-                    message += "`{}`\n".format(timedelta(seconds=v))
-                elif 'elevation' in k:
-                    v = round(v / divider)
-                    message += "`{} m`\n".format(v)
+        divider = datetime.date(datetime.now()).isocalendar().week
+    data = []
+    for k, v in useful_data.items():
+        raw_section = stats.get(k)
+        if raw_section.get('count'):
+            raw_section['header'] = v
+            idle_time = raw_section.get(
+                'elapsed_time') - raw_section.get('moving_time')
+            idle_percent = round((
+                idle_time / raw_section.get('elapsed_time')) * 100, 2)
+            raw_section['idle_time'] = idle_time
+            raw_section['idle_percent'] = idle_percent
+            section = {}
+            if divider:
+                for k, v in raw_section.items():
+                    if k in FORMATTER_TEMPLATES['relative_keys']:
+                        if k in FORMATTER_TEMPLATES['convert_keys']['time']:
+                            raw_section[k] = round((v) / divider)
+                        else:
+                            raw_section[k] = round((v) / divider, 2)
+            for k, v in raw_section.items():
+                if k in FORMATTER_TEMPLATES['convert_keys']['time']:
+                    section[k] = str(timedelta(seconds=v))
+                elif k in FORMATTER_TEMPLATES['convert_keys']['distance']:
+                    section[k] = distance_formatter(v)
                 else:
-                    v = round(v / divider, 1)
-                    message += "`{}`\n".format(v)
-            message += '\n'
-    if not message:
-        logger.warning(LOG_TEMPLATES['stats_none'].format(period, lang))
-    else:
-        logger.debug(LOG_TEMPLATES['stats_sent'].format(period, lang))
-    return message
+                    section[k] = escape(str(v).strip())
+            data.append(section)
+    if data:
+        format_template = FORMATTER_TEMPLATES[lang]['stats']
+        message = ''
+        for section in data:
+            for key in format_template:
+                if section.get(key):
+                    message += format_template[key].format(section[key])
+        return message
 
 
 def activities(activities, lang='en'):
@@ -89,17 +91,13 @@ def activities(activities, lang='en'):
                 distance=activity_distance, type=activity_type,
                 id=activity_id)
             message += '\n'
-        if not message:
-            logger.warning(LOG_TEMPLATES['activities_none'].format(lang))
-        else:
-            logger.debug(LOG_TEMPLATES['activities_sent'].format(lang))
         return message
 
 
 def format_activity(activity, lang):
     logger.debug(LOG_TEMPLATES['activity_init'].format(lang))
-    useful_data = FORMATTER_TEMPLATES['useful_data']['activity']
-    raw_data = {k: activity.get(k) for k in useful_data if activity.get(k)}
+    USEFUL_DATA = FORMATTER_TEMPLATES['useful_data']['activity']
+    raw_data = {k: activity.get(k) for k in USEFUL_DATA if activity.get(k)}
     idle_time = raw_data.get('elapsed_time') - raw_data.get('moving_time')
     idle_percent = round((idle_time / raw_data.get('elapsed_time')) * 100, 2)
     raw_data['idle_time'] = idle_time
@@ -109,13 +107,13 @@ def format_activity(activity, lang):
     raw_data['gear_nickname'] = raw_data.get('gear').get('nickname')
     data = {}
     for k, v in raw_data.items():
-        if k in FORMATTER_TEMPLATES['convertible_keys']['time']:
+        if k in FORMATTER_TEMPLATES['convert_keys']['time']:
             data[k] = str(timedelta(seconds=v))
-        elif k in FORMATTER_TEMPLATES['convertible_keys']['distance']:
+        elif k in FORMATTER_TEMPLATES['convert_keys']['distance']:
             data[k] = distance_formatter(v)
-        elif k in FORMATTER_TEMPLATES['convertible_keys']['speed']:
+        elif k in FORMATTER_TEMPLATES['convert_keys']['speed']:
             data[k] = speed_formatter(v)
-        elif k in FORMATTER_TEMPLATES['convertible_keys']['date']:
+        elif k in FORMATTER_TEMPLATES['convert_keys']['date']:
             data[k] = timez_formatter(v)
         else:
             data[k] = escape(str(v).strip())
@@ -139,7 +137,7 @@ def format_activity(activity, lang):
 def segment(segment, lang='en'):
     if segment:
         logger.debug(LOG_TEMPLATES['segment_init'].format(lang))
-        useful_data = ['id' , 'name', 'activity_type', 'distance',
+        useful_data = ['id', 'name', 'activity_type', 'distance',
                        'average_grade', 'maximum_grade',
                        'total_elevation_gain', 'climg_category',
                        'effort_count', 'athlete_count',
@@ -195,10 +193,6 @@ def segment(segment, lang='en'):
             ll_name, ll_efforts)
         message += FORMATTER_TEMPLATES[lang]['seg']['strava_url'].format(
             FORMATTER_URLS['segment_url'], segment_id)
-        if not message:
-            logger.warning(LOG_TEMPLATES['segment_none'].format(lang))
-        else:
-            logger.debug(LOG_TEMPLATES['segment_sent'].format(lang))
         return message
 
 

@@ -1,14 +1,25 @@
 {
     "en": {
         "stats": {
-            "all_ride_totals": "Ride overall stats",
-            "all_run_totals": "Run overall stats",
-            "ytd_ride_totals": "This year ride stats",
-            "ytd_run_totals": "This year run stats"
-        },
-        "weekavg": {
-            "ytd_ride_totals": "Average ride stats per week",
-            "ytd_run_totals": "Average run stats per week"
+            "header": "`{}`\n",
+            "count": "*Number:*  `{}` \\| ",
+            "distance": "*Distance:*  `{}`  km\n",
+            "moving_time": "*Moving time:*  `{}` \\| ",
+            "elapsed_time": "*Elapsed time:*  `{}`\n",
+            "idle_time": "*Idle time:*  `{}` \\| ",
+            "idle_percent": "*Idle percent:*  `{} %`\n",
+            "elevation_gain": "*Elevation gain:*  `{} m`\n\n",
+            "periods": {
+                "all": {
+                    "all_ride_totals": "Ride overall stats",
+                    "all_run_totals": "Run overall stats"},
+                "year": {
+                    "ytd_ride_totals": "This year ride stats",
+                    "ytd_run_totals": "This year run stats"},
+                "week": {
+                    "ytd_ride_totals": "Average ride stats per week",
+                    "ytd_run_totals": "Average run stats per week"}
+            }
         },
         "stats_for_humans": {
             "count": "Number",
@@ -120,13 +131,16 @@
         "activity": [
             "start_date_local", "name", "description", "id", "distance", "type", "average_speed", "max_speed",
             "total_elevation_gain", "moving_time", "elapsed_time", "device_name", "gear", "has_heartrate",
-            "average_heartrate", "max_heartrate", "elev_high", "elev_low", "average_watts", "segment_efforts"
-        ]
+            "average_heartrate", "max_heartrate", "elev_high", "elev_low", "average_watts", "segment_efforts"],
+        "stats": [
+            "all_ride_totals", "all_run_totals", "all_swim_totals",
+            "ytd_ride_totals", "ytd_run_totals", "ytd_swim_totals"]
     },
-    "convertible_keys": {
+    "convert_keys": {
         "time": ["moving_time", "elapsed_time", "idle_time"],
         "distance": ["distance"],
         "speed": ["average_speed", "max_speed"],
         "date": ["start_date_local"]
-    }
+    },
+    "relative_keys": ["count", "distance", "moving_time", "elapsed_time", "idle_time", "elevation_gain"]
 }
