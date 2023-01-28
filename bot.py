@@ -63,9 +63,9 @@ class Replyer:
         elif basic_command == '/recent':
             caller = APICaller(telegram_id=self.telegram_id)
             activities = caller.activities()
-            formatted_activities = formatter.activities(
-                activities=activities, lang=self.lang)
-            if formatted_activities:
+            if activities:
+                formatted_activities = formatter.format_activities(
+                    activities=activities, lang=self.lang)
                 await bot.send_message(self.telegram_id, formatted_activities,
                                        parse_mode='MarkdownV2')
             else:
@@ -76,11 +76,11 @@ class Replyer:
     async def stats_commands(self):
         stats_command = self.message.get_command()
         caller = APICaller(telegram_id=self.telegram_id)
-        stats = caller.get_stats()
         periods = BOT_TEMPLATES['constants']['periods']
         period = periods.get(stats_command)
-        formatted_stats = formatter.format_stats(stats, period, self.lang)
-        if formatted_stats:
+        stats = caller.get_stats()
+        if stats:
+            formatted_stats = formatter.format_stats(stats, period, self.lang)
             await bot.send_message(
                 self.telegram_id, formatted_stats, parse_mode='MarkdownV2')
         else:

@@ -34,108 +34,49 @@ def format_stats(stats, period, lang):
         divider = datetime.date(datetime.now()).isocalendar().week
     data = []
     for k, v in useful_data.items():
-        raw_section = stats.get(k)
-        if raw_section.get('count'):
-            raw_section['header'] = v
-            idle_time = raw_section.get(
-                'elapsed_time') - raw_section.get('moving_time')
-            idle_percent = round((
-                idle_time / raw_section.get('elapsed_time')) * 100, 2)
-            raw_section['idle_time'] = idle_time
-            raw_section['idle_percent'] = idle_percent
-            section = {}
+        section = stats.get(k)
+        if section.get('count'):
+            section['header'] = v
+            insert_idle(section)
             if divider:
-                for k, v in raw_section.items():
-                    if k in FORMATTER_TEMPLATES['relative_keys']:
-                        if k in FORMATTER_TEMPLATES['convert_keys']['time']:
-                            raw_section[k] = round((v) / divider)
-                        else:
-                            raw_section[k] = round((v) / divider, 2)
-            for k, v in raw_section.items():
-                if k in FORMATTER_TEMPLATES['convert_keys']['time']:
-                    section[k] = str(timedelta(seconds=v))
-                elif k in FORMATTER_TEMPLATES['convert_keys']['distance']:
-                    section[k] = distance_formatter(v)
-                else:
-                    section[k] = escape(str(v).strip())
+                for k, v in section.items():
+                    if k in FORMATTER_TEMPLATES['convert_keys']['time']:
+                        section[k] = round((v) / divider)
+                    elif k in FORMATTER_TEMPLATES['relative_keys']:
+                        section[k] = round((v) / divider, 2)
+            value_formatter(section, modify=True)
             data.append(section)
-    if data:
-        format_template = FORMATTER_TEMPLATES[lang]['stats']
-        message = ''
-        for section in data:
-            for key in format_template:
-                if section.get(key):
-                    message += format_template[key].format(section[key])
-        return message
+    message = ''
+    for section in data:
+        message += use_format_template(section, lang, 'stats')
+    return message
 
 
-def activities(activities, lang='en'):      # REFACTOR
-    if activities:
-        logger.debug(LOG_TEMPLATES['activities_init'].format(lang))
-        message = ''
-        for activity in activities:
-            activity_name = escape(activity.get('name').strip())
-            activity_distance = escape(str(round(
-                activity.get('distance') / 1000, 2)))
-            activity_type = activity.get('type').lower()
-            if lang != 'en':
-                localed_activity = FORMATTER_TEMPLATES[lang]['types'].get(
-                    activity_type)
-                if localed_activity:
-                    activity_type = localed_activity
-            activity_id = activity.get('id')
-            activity_date = timez_formatter(activity.get('start_date_local'))
-            message += FORMATTER_TEMPLATES[lang]['acts']['date_name'].format(
-                activity_date, activity_name)
-            message += FORMATTER_TEMPLATES[lang]['acts']['type_dist'].format(
-                distance=activity_distance, type=activity_type,
-                id=activity_id)
-            message += '\n'
-        return message
+def format_activities(activities, lang):
+    logger.debug(LOG_TEMPLATES['activities_init'].format(lang))
+    for activity in activities:
+        locale_type(activity, lang)
+        value_formatter(activity, modify=True)
+    message = ''
+    for activity in activities:
+        message += use_format_template(activity, lang, 'activities')
+    return message
 
 
 def format_activity(activity, lang):
     logger.debug(LOG_TEMPLATES['activity_init'].format(lang))
     USEFUL_DATA = FORMATTER_TEMPLATES['useful_data']['activity']
-    raw_data = {k: activity.get(k) for k in USEFUL_DATA if activity.get(k)}
-    if lang != 'en':
-        localed_activity = FORMATTER_TEMPLATES[lang]['types'].get(
-                    raw_data['type'].lower())
-        if localed_activity:
-            raw_data['type'] = localed_activity
-    idle_time = raw_data.get('elapsed_time') - raw_data.get('moving_time')
-    idle_percent = round((idle_time / raw_data.get('elapsed_time')) * 100, 2)
-    raw_data['idle_time'] = idle_time
-    raw_data['idle_percent'] = idle_percent
-    raw_data['average_pace'] = pace_formatter(raw_data.get('average_speed'))
-    raw_data['max_pace'] = pace_formatter(raw_data.get('max_speed'))
-    raw_data['gear_nickname'] = raw_data.get('gear').get('nickname')
-    data = {}
-    for k, v in raw_data.items():
-        if k in FORMATTER_TEMPLATES['convert_keys']['time']:
-            data[k] = str(timedelta(seconds=v))
-        elif k in FORMATTER_TEMPLATES['convert_keys']['distance']:
-            data[k] = distance_formatter(v)
-        elif k in FORMATTER_TEMPLATES['convert_keys']['speed']:
-            data[k] = speed_formatter(v)
-        elif k in FORMATTER_TEMPLATES['convert_keys']['date']:
-            data[k] = timez_formatter(v)
-        else:
-            data[k] = escape(str(v).strip())
-    data['url'] = FORMATTER_URLS['activity_url'] + str(raw_data.get('id'))
-    data['download'] = raw_data.get('id')
-    format_template = FORMATTER_TEMPLATES[lang]['activity']
-    message = ''
-    for key in format_template:
-        if data.get(key):
-            message += format_template[key].format(data[key])
-    if raw_data.get('segment_efforts'):
-        message += format_template['segment_data']['segment_list']
-        for segment in raw_data.get('segment_efforts'):
-            segment_name = segment['segment'].get('name')
-            segment_id = segment['segment'].get('id')
-            message += format_template['segment_data']['segment'].format(
-                segment_name, segment_id)
+    data = {k: activity.get(k) for k in USEFUL_DATA if activity.get(k)}
+    locale_type(data, lang)
+    insert_idle(data)
+    insert_pace(data)
+    data['gear_nickname'] = data.get('gear').get('nickname')
+    segment_data = data.get('segment_efforts')
+    value_formatter(data, modify=True)
+    data['url'] = FORMATTER_URLS['activity_url'] + str(data.get('id'))
+    data['download'] = data.get('id')
+    message = use_format_template(
+        data, lang, 'activity', segment_data=segment_data)
     return message
 
 
@@ -218,6 +159,68 @@ def pace_formatter(speed):
     pace = datetime.strptime((
         str(timedelta(seconds=(round(1000 / speed))))), '%H:%M:%S')
     return escape(datetime.strftime(pace, '%M:%S'))
+
+
+def value_formatter(data: dict, modify: bool):
+    """Modifies the values in the dictonary with specific rules.
+    Speed(m/s) to km/h. Time(s) to timedelta. Distance(m) to km.
+    Zone aware datetime string to a local datetime string.
+    Other values will be filled fith escape symbolds for MD2.
+    :param bool modify: Modify the orignal dict or return a new one."""
+    if not modify:
+        data = data.copy()
+    for key, value in data.items():
+        if key in FORMATTER_TEMPLATES['convert_keys']['time']:
+            data[key] = str(timedelta(seconds=value))
+        elif key in FORMATTER_TEMPLATES['convert_keys']['distance']:
+            data[key] = distance_formatter(value)
+        elif key in FORMATTER_TEMPLATES['convert_keys']['speed']:
+            data[key] = speed_formatter(value)
+        elif key in FORMATTER_TEMPLATES['convert_keys']['date']:
+            data[key] = timez_formatter(value)
+        else:
+            data[key] = escape(str(value).strip())
+    return data
+
+
+def insert_idle(data: dict):
+    """Iserting idle time and idle percent values into the dict."""
+    idle_time = data.get('elapsed_time') - data.get('moving_time')
+    idle_percent = round((idle_time / data.get('elapsed_time')) * 100, 2)
+    data['idle_time'] = idle_time
+    data['idle_percent'] = idle_percent
+
+
+def insert_pace(data: dict):
+    """Iserting average and maximum pace values into the dict."""
+    data['average_pace'] = pace_formatter(data.get('average_speed'))
+    data['max_pace'] = pace_formatter(data.get('max_speed'))
+
+
+def locale_type(data: dict, lang: str):
+    """Locales the type key in activity dictionary."""
+    if lang != 'en':
+        localed_activity = FORMATTER_TEMPLATES[lang]['types'].get(
+                    data['type'].lower())
+        if localed_activity:
+            data['type'] = localed_activity
+
+
+def use_format_template(data: dict, lang: str, type: str, segment_data=None):
+    """Formats data dictionary with specified template."""
+    format_template = FORMATTER_TEMPLATES[lang][type]
+    message = ''
+    for key in format_template:
+        if data.get(key):
+            message += format_template[key].format(data[key])
+    if segment_data:
+        message += format_template['segment_data']['segment_list']
+        for segment in segment_data:
+            segment_name = segment['segment'].get('name')
+            segment_id = segment['segment'].get('id')
+            message += format_template['segment_data']['segment'].format(
+                segment_name, segment_id)
+    return message
 
 
 def format_users(users):

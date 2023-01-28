@@ -21,6 +21,13 @@
                     "ytd_run_totals": "Average run stats per week"}
             }
         },
+        "activities": {
+            "start_date_local": "*{}* \\| ",
+            "name": " `{}`\n",
+            "distance": "`{} km`  ",
+            "type": "{} \\| ",
+            "id": "more data: /activity{}\n\n"
+        },
         "acts": {
             "date_name": "*{}* \\| `{}`\n",
             "type_dist": "{distance} km {type} \\| more data: /activity{id}\n"
@@ -118,6 +125,13 @@
             "segment_data": {
                 "segment_list": "\n*Участки в тренировке:*\n",
                 "segment": "`{}` подробнее: /segment{}\n"}
+        },
+        "activities": {
+            "start_date_local": "*{}* \\| ",
+            "name": " `{}`\n",
+            "distance": "`{} км`  ",
+            "type": "{} \\| ",
+            "id": "подробнее: /activity{}\n\n"
         },
         "seg": {
             "name_type": "`{}`  \\({}\\)\n",
