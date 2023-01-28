@@ -74,21 +74,14 @@ def index_page():
 
 
 @app.route('/about')
-def about_page():
-    lang = locale_check(request)
-    context = FLASK_TEMPLATES['locale'][lang]
-    content = get_content('about', lang)
-    return render_template('pages/about.html', context=context,
-                           content=content)
-
-
 @app.route('/changelog')
-def changelog_page():
+def pages():
     lang = locale_check(request)
     context = FLASK_TEMPLATES['locale'][lang]
-    content = get_content('changelog', lang)
-    return render_template('pages/changelog.html', context=context,
-                           content=content)
+    content = get_content(request.path, lang)
+    return render_template(
+        'pages{}.html'.format(request.path),
+        context=context, content=content)
 
 
 def locale_check(request):

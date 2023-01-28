@@ -16,7 +16,7 @@ def get_template(filename):
 
 
 def get_content(filename, lang):
-    filepath = os.path.join(absolute_path, 'content/{}_{}.txt'.format(
+    filepath = os.path.join(absolute_path, 'content{}_{}.txt'.format(
         filename, lang))
     return open(filepath, encoding='utf-8').readlines()
 
