@@ -1,3 +1,5 @@
+<a href="https://codeclimate.com/github/iwatkot/stravagrambot/maintainability"><img src="https://api.codeclimate.com/v1/badges/f332b498552ba5752255/maintainability" /></a>
+
 # In development now
 
 ## How and why
