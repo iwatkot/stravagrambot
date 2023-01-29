@@ -5,7 +5,7 @@ import os
 from multiprocessing import Process
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher import FSMContext, filters
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from decouple import config
 from datetime import datetime
@@ -45,8 +45,8 @@ class Replyer:
         self.first_name = message.from_user.first_name
 
     async def basic_commands(self):
-        basic_command = self.message.get_command()
-        if basic_command == '/start':
+        command = self.message.get_command()
+        if command == '/start':
             await self.message.reply(
                 BOT_TEMPLATES[self.lang][self.message.text].format(
                     self.first_name), parse_mode='MarkdownV2')
@@ -54,13 +54,13 @@ class Replyer:
             await bot.send_message(
                 self.telegram_id, BOT_TEMPLATES[self.lang]['TOUR'],
                 parse_mode='MarkdownV2')
-        elif basic_command == '/auth':
+        elif command == '/auth':
             auth_url = URL_TEMPLATES['oauth']['access_request'].format(
                 self.telegram_id)
             await self.message.reply(
                 BOT_TEMPLATES[self.lang][self.message.text].format(auth_url),
                 parse_mode='MarkdownV2')
-        elif basic_command == '/recent':
+        elif command == '/recent':
             caller = APICaller(telegram_id=self.telegram_id)
             activities = caller.activities()
             if activities:
@@ -87,6 +87,39 @@ class Replyer:
             await bot.send_message(
                 self.telegram_id, BOT_TEMPLATES[self.lang]['NO_STATS'])
 
+    async def composite_commands(self, value):
+        caller = APICaller(telegram_id=self.telegram_id)
+        command = self.message.get_command()
+        if "/activity" in command:
+            raw_data = caller.activity(value)
+            if raw_data:
+                data = formatter.format_activity(raw_data, self.lang)
+                await bot.send_message(
+                    self.telegram_id, data, parse_mode='MarkdownV2')
+            else:
+                await bot.send_message(
+                    self.telegram_id,
+                    BOT_TEMPLATES[self.lang]['NO_ACTIVITY'])
+        elif "/segment" in command:
+            raw_data = caller.segment(value)
+            if raw_data:
+                data = formatter.format_segment(raw_data, self.lang)
+                await bot.send_message(
+                    self.telegram_id, data, parse_mode='MarkdownV2')
+            else:
+                await bot.send_message(
+                    self.telegram_id,
+                    BOT_TEMPLATES[self.lang]['NO_SEGMENT'])
+        elif "/download" in command:
+            raw_data = caller.activity(value)
+            filepath = caller.create_gpx()
+            if filepath:
+                file = types.InputFile(filepath)
+                await bot.send_document(self.telegram_id, file)
+            else:
+                await self.message.reply(
+                    BOT_TEMPLATES[self.lang]['BAD_GPX_REQUEST'])
+
 
 @dp.message_handler(commands=["start", "auth", "recent"])
 async def basic_commands(message: types.Message):
@@ -95,55 +128,19 @@ async def basic_commands(message: types.Message):
 
 
 @dp.message_handler(commands=["statsall", "statsyear", "weekavg"])
-async def stats_handler(message: types.Message):
+async def stats_commands(message: types.Message):
     r = Replyer(message)
     await r.stats_commands()
 
 
-@dp.message_handler(regexp_commands=[r'/activity?(?P<activity_id>\w+)'])
-async def activity_handler(message: types.Message,
-                           regexp_command: re.Match[str]):
+@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[
+    'activity([0-9]*)', 'segment([0-9]*)', 'download([0-9]*)']))
+async def composite_commands(message: types.Message,
+                             regexp_command: re.Match[str]):
     # Handles the '/activity' command.
-    activity_id = regexp_command['activity_id']
-    telegram_id, lang, user_name = unpack_message(message)
-    caller = APICaller(telegram_id=telegram_id)
-    activity = caller.activity(activity_id)
-    formatted_activity = formatter.format_activity(activity, lang)
-    await bot.send_message(telegram_id, formatted_activity,
-                           parse_mode='MarkdownV2')
-
-
-@dp.message_handler(regexp_commands=[r'/segment?(?P<segment_id>\w+)'])
-async def segment_handler(message: types.Message,
-                          regexp_command: re.Match[str]):
-    # Handles the '/segment' command.
-    segment_id = regexp_command['segment_id']
-    telegram_id, lang, user_name = unpack_message(message)
-    caller = APICaller(telegram_id=telegram_id)
-    segment = caller.segment(segment_id)
-    if segment:
-        formatted_segment = formatter.format_segment(
-            segment=segment, lang=lang)
-        await bot.send_message(telegram_id, formatted_segment,
-                               parse_mode='MarkdownV2')
-    else:
-        await bot.send_message(
-            telegram_id, BOT_TEMPLATES[lang]['NO_SEGMENT'])
-
-
-@dp.message_handler(regexp_commands=[r'/download?(?P<activity_id>\w+)'])
-async def gpx_handler(message: types.Message,
-                      regexp_command: re.Match[str]):
-    activity_id = regexp_command['activity_id']
-    telegram_id, lang, user_name = unpack_message(message)
-    caller = APICaller(telegram_id=telegram_id)
-    caller.activity(activity_id)
-    filepath = caller.create_gpx()
-    if filepath:
-        file = types.InputFile(filepath)
-        await bot.send_document(telegram_id, file)
-    else:
-        await message.reply(BOT_TEMPLATES[lang]['BAD_GPX_REQUEST'])
+    value = regexp_command.group(1)
+    r = Replyer(message)
+    await r.composite_commands(value)
 
 
 @dp.message_handler(commands=["find"])

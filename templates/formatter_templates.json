@@ -54,7 +54,7 @@
             "download": "\n*Download GPX file:* /download{}\n",
             "segment_data": {
                 "segment_list": "\n*Segments in activity:*\n",
-                "segment": "`{}` more data: /segment{}\n"}
+                "segment": "`{}`  \\| more data: /segment{}\n"}
         },
         "segment": {
             "name": "`{}`  \\| ",
@@ -126,7 +126,7 @@
             "download": "\n*Скачать GPX файл:* /download{}\n",
             "segment_data": {
                 "segment_list": "\n*Участки в тренировке:*\n",
-                "segment": "`{}` подробнее: /segment{}\n"}
+                "segment": "`{}`  \\| подробнее: /segment{}\n"}
         },
         "activities": {
             "start_date_local": "*{}* \\| ",

@@ -17,12 +17,6 @@ class Token():
         self.telegram_id = telegram_id
         self.refresh_token = refresh_token
         self.code = code
-        if self.refresh_token:
-            logger.debug(LOG_TEMPLATES['TOKEN_INIT_REFRESH_TOKEN'].format(
-                self.telegram_id, self.refresh_token))
-        if self.code:
-            logger.debug(LOG_TEMPLATES['TOKEN_INIT_CODE'].format(
-                self.telegram_id, self.code))
 
     def exchange(self):
         data = {

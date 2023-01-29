@@ -61,11 +61,6 @@ class DataBase:
         check_query = QUERY_TEMPLATES['check_query'].format(self.telegram_id)
         cursor.execute(check_query)
         db_response = cursor.fetchone()[0]
-        if db_response:
-            logger.debug(LOG_TEMPLATES['IN_DATABASE'].format(self.telegram_id))
-        else:
-            logger.debug(LOG_TEMPLATES['NOT_IN_DATABASE'].format(
-                self.telegram_id))
         cursor.close()
         return db_response
 
@@ -106,12 +101,6 @@ class DataBase:
         now = datetime.now().timestamp()
         cursor.close()
         expired = now > db_response - (60 * 60)
-        if expired:
-            logger.info(LOG_TEMPLATES['TOKEN_EXPIRED'].format(
-                self.telegram_id))
-        else:
-            logger.debug(LOG_TEMPLATES['TOKEN_NOT_EXPIRED'].format(
-                self.telegram_id))
         return expired
 
     def get_token(self, token_type):

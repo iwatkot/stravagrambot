@@ -11,7 +11,8 @@
         "BAD_GPX_REQUEST": "The bot can't generate GPX file for this activity. Check if it has actual GPS data.",
         "NO_ACTIVITIES": "There're no activites in the specified period of time.",
         "NO_STATS": "There're no actual activities in your Stava account.",
-        "NO_SEGMENT": "The bot can't find the specified segment."
+        "NO_SEGMENT": "The bot can't find the specified segment.",
+        "NO_ACTIVITY": "The bot can't find the specified activity."
     },
     "ru": {
         "/start": "Здравствуй, {}\\! С помощью этого бота ты можешь получить доступ к своим тренировкам на Strava\\.\nЧтобы начать пользоваться ботом, используй команду /auth\\.\n*Powered by Strava*\\.",
@@ -25,7 +26,8 @@
         "BAD_GPX_REQUEST": "Бот не смог сгенерировать GPX файл для данной активности. Проверьте, есть ли в этой тренировке GPS данные.",
         "NO_ACTIVITIES": "В указанном промежутке времени нет тренировок.",
         "NO_STATS": "В вашем аккаунте Strava нет подходящих тренировок.",
-        "NO_SEGMENT": "Бот не смог найти указанный сегмент."
+        "NO_SEGMENT": "Бот не смог найти указанный сегмент.",
+        "NO_ACTIVITY": "Бот не смог найти указанную тренировку."
     },
     "admin": {
         "WH_SUB_GOOD": "Successfully subscribed to Webhooks with id: [{}].",
