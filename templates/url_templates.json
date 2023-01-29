@@ -8,7 +8,8 @@
         "activities": "https://www.strava.com/api/v3/athlete/activities",
         "activity": "https://www.strava.com/api/v3/activities/{}",
         "streams": "https://www.strava.com/api/v3/activities/{}/streams",
-        "segment": "https://www.strava.com/api/v3/segments/{}"
+        "segment": "https://www.strava.com/api/v3/segments/{}",
+        "starred_segments": "https://www.strava.com/api/v3/segments/starred"
     },
     "formatter": {
         "activity_url": "https://www\\.strava\\.com/activities/",

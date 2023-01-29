@@ -62,27 +62,33 @@ class Replyer:
                 parse_mode='MarkdownV2')
         elif command == '/recent':
             caller = APICaller(telegram_id=self.telegram_id)
-            activities = caller.activities()
-            if activities:
-                formatted_activities = formatter.format_activities(
-                    activities=activities, lang=self.lang)
-                await bot.send_message(self.telegram_id, formatted_activities,
+            raw_data = caller.get_activities()
+            if raw_data:
+                data = formatter.format_activities(raw_data, self.lang)
+                await bot.send_message(self.telegram_id, data,
                                        parse_mode='MarkdownV2')
             else:
                 await bot.send_message(
                     self.telegram_id,
                     BOT_TEMPLATES[self.lang]['NO_ACTIVITIES'])
+        elif command == '/starredsegments':
+            caller = APICaller(telegram_id=self.telegram_id)
+            raw_data = caller.get_starred_segments()
+            if raw_data:
+                data = formatter.format_starred_segments(raw_data, self.lang)
+                await bot.send_message(self.telegram_id, data,
+                                       parse_mode='MarkdownV2')
 
     async def stats_commands(self):
         stats_command = self.message.get_command()
         caller = APICaller(telegram_id=self.telegram_id)
         periods = BOT_TEMPLATES['constants']['periods']
         period = periods.get(stats_command)
-        stats = caller.get_stats()
-        if stats:
-            formatted_stats = formatter.format_stats(stats, period, self.lang)
+        raw_data = caller.get_stats()
+        if raw_data:
+            data = formatter.format_stats(raw_data, period, self.lang)
             await bot.send_message(
-                self.telegram_id, formatted_stats, parse_mode='MarkdownV2')
+                self.telegram_id, data, parse_mode='MarkdownV2')
         else:
             await bot.send_message(
                 self.telegram_id, BOT_TEMPLATES[self.lang]['NO_STATS'])
@@ -91,7 +97,7 @@ class Replyer:
         caller = APICaller(telegram_id=self.telegram_id)
         command = self.message.get_command()
         if "/activity" in command:
-            raw_data = caller.activity(value)
+            raw_data = caller.get_activity(value)
             if raw_data:
                 data = formatter.format_activity(raw_data, self.lang)
                 await bot.send_message(
@@ -101,7 +107,7 @@ class Replyer:
                     self.telegram_id,
                     BOT_TEMPLATES[self.lang]['NO_ACTIVITY'])
         elif "/segment" in command:
-            raw_data = caller.segment(value)
+            raw_data = caller.get_segment(value)
             if raw_data:
                 data = formatter.format_segment(raw_data, self.lang)
                 await bot.send_message(
@@ -111,7 +117,7 @@ class Replyer:
                     self.telegram_id,
                     BOT_TEMPLATES[self.lang]['NO_SEGMENT'])
         elif "/download" in command:
-            raw_data = caller.activity(value)
+            raw_data = caller.get_activity(value)
             filepath = caller.create_gpx()
             if filepath:
                 file = types.InputFile(filepath)
@@ -121,7 +127,7 @@ class Replyer:
                     BOT_TEMPLATES[self.lang]['BAD_GPX_REQUEST'])
 
 
-@dp.message_handler(commands=["start", "auth", "recent"])
+@dp.message_handler(commands=["start", "auth", "recent", "starredsegments"])
 async def basic_commands(message: types.Message):
     r = Replyer(message)
     await r.basic_commands()
@@ -176,14 +182,14 @@ async def find_finish(message: types.Message, state: FSMContext):
         return
     if 0 < before - after < (120 * 24 * 60 * 60):
         caller = APICaller(telegram_id=telegram_id)
-        activities = caller.activities(before=before, after=after)
+        raw_data = caller.get_activities(before=before, after=after)
         await state.finish()
-        if not activities:
+        if not raw_data:
             await bot.send_message(
                 telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITIES'])
         else:
-            formatted_activities = formatter.activities(activities=activities)
-            await bot.send_message(telegram_id, formatted_activities,
+            data = formatter.format_activities(raw_data, lang)
+            await bot.send_message(telegram_id, data,
                                    parse_mode='MarkdownV2')
     else:
         await message.reply(BOT_TEMPLATES[lang]['WRONG_PERIOD'])

@@ -70,6 +70,7 @@
         "stats_init": "Starting formatting stats for period [{}] with language [{}].",
         "activities_init": "Starting formatting activities with language [{}].",
         "activity_init": "Starting formatting activity with language [{}].",
-        "segment_init": "Starting formatting segment with language [{}]."
+        "segment_init": "Starting formatting segment with language [{}].",
+        "FUNCTION_INIT": "Launched function [{}] for language [{}]."
     }
 }

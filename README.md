@@ -25,25 +25,46 @@ The `WebHook` class is designed to handle Strava webhook subscription. It's also
 Very strange, but Strava API doesn't provide any option to download the GPX file for the activity, so the bot generates it by itself using data streams. The code, which handles GPX generating is literally copy-pasted from [PhysicsDan's GPXfromStravaAPI](https://github.com/PhysicsDan/GPXfromStravaAPI).
 
 ## Modules
-_later_
+_in development_
+**api** -<br>
+**bot** -<br>
+**database_handler** -<br>
+**flask_server** -<br>
+**format_handler** -<br>
+**log_handler** -<br>
+**token_handler** -<br>
+**webhook_handler** -<br>
 
 ## Commands
-_later_
+_List of inital commands, which shown in the main menu of the bot:_<br>
+**/start** - Starts the bot and sends user short tips.<br>
+**/auth** - Sends user Strava OAuth link to perform authentication process.<br>
+**/stats<>** - Sends the user formatted stats from the Strava account. all - for overall stats and year for a current year stats.<br>
+**/recent** - Sends the user formatted list of activities in the last 60 days with links to view a full information about specified activity.<br>
+**/find** - Starts the state to find activities in the specified period of time (look state commands).<br>
+**/weekavg** - Mostly the same as /statsyear, but the stats will be divided by the number of the current week so user can see his effort per week.<br><br>
+_List of context commands, which not shown in the menu, but available at any moment:_<br>
+**/activity<>** - Shows detailed information about activity, requires activity ID in the command.<br>
+**/segment<>** - Shows detailed information about segment, requires segment ID in the command.<br>
+**/download<>** - Generates GPX file from activity and sends it back to the user, requires activity ID in the command.<br><br>
+_List of state commands, which not shown in the menu and available only in specific bot state:_<br>
+**/cancel** - Cancels the current state (operation).<br>
 
 ## Admin commands
-_later_
+The bot will answer to admin commands only if user's Telegram ID is equal to `ADMIN` (from external file).<br>
+**/logs** - Sends current log file back.<br>
+**/users** - Sends back the complete users list with links to Strava accounts.<br>
+**/webhook<>** - The commands to handle Strava webhook subscription. view - to check current subscription, delete - to delete (if active), subscribe - to create a new subscription.<br>
 
 ## To-Do
 - Add content to `about` webpages.<br>
-- README.md<br>
 - User notifications from webhooks.<br>
-- Commands for accessing starred segments on Strava.<br>
 - Commands for accessing athlete's gear<br>
 - Commands for accessing athlete's routes<br>
 
-
 ## Changelog
-**2023/01/29** - Complete refactoring of format_handler.py. Partial refactoring of bot.py.
+**2023/01/29** - Added /starredsegments, whuch returns the list of athlete's starred segments.<br>
+**2023/01/29** - Complete refactoring of format_handler.py. Partial refactoring of bot.py.<br>
 **2023/01/27** - Added segements to the activity, added /segment command to check the segments. Added logger to the format_handler.<br>
 **2023/01/26** - Fixed bug when /stats won't show info at all (or shows icorrect data).<br>
 **2023/01/26** - Added `ru` locale for /find and /recent commands. Added locale to the webpages. Added admin commands for the webhook actions (subscribe, view, delete).<br>

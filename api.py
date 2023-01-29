@@ -73,7 +73,7 @@ class APICaller:
                 self.telegram_id))
             return None
 
-    def activities(self, after=None, before=None):
+    def get_activities(self, after=None, before=None):
         url = API_URLS['activities']
         logger.debug(LOG_TEMPLATES['ACTIVITIES'].format(self.telegram_id))
         if not after and not before:
@@ -94,7 +94,7 @@ class APICaller:
                 self.telegram_id))
             return None
 
-    def activity(self, activity_id):
+    def get_activity(self, activity_id):
         self.activity_id = activity_id
         url = API_URLS['activity'].format(activity_id)
         logger.debug(LOG_TEMPLATES['ACTIVITY'].format(self.telegram_id))
@@ -151,7 +151,7 @@ class APICaller:
         logger.info(LOG_TEMPLATES['GPX_CREATED'].format(filepath))
         return filepath
 
-    def segment(self, segment_id):
+    def get_segment(self, segment_id):
         url = API_URLS['segment'].format(segment_id)
         logger.debug(LOG_TEMPLATES['SEGMENT'].format(self.telegram_id))
         response = requests.get(url, headers=self.headers)
@@ -164,3 +164,9 @@ class APICaller:
             logger.error(LOG_TEMPLATES['BAD_RESPONSE'].format(
                 self.telegram_id))
             return None
+
+    def get_starred_segments(self):
+        url = API_URLS['starred_segments']
+        response = requests.get(url, headers=self.headers)
+        if response.status_code == 200:
+            return response.json()

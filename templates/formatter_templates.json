@@ -76,6 +76,14 @@
             "ll_efforts": "with  `{}`  efforts\n",
             "url": "\n[Check segment on Strava]({})"
 
+        },
+        "starred_segments": {
+            "name": "`{}`  \\| ",
+            "type": "{}\n",
+            "distance": "*Distance:*  `{}`  km \\| ",
+            "average_grade": "*Average grade:*  `{}%`\n",
+            "pr_time": "*Your PR:*  `{}`  \\|",
+            "id": "more data: /segment{}\n\n"
         }
     },
     "ru": {
@@ -154,7 +162,14 @@
             "ll_title": "*Local legend:*  `{}`  ",
             "ll_efforts": "с  `{}`  попытками\n",
             "url": "\n[Посмотреть сегмент на сайте Strava]({})"
-
+        },
+        "starred_segments": {
+            "name": "`{}`  \\| ",
+            "type": "{}\n",
+            "distance": "*Длина:*  `{}`  км \\| ",
+            "average_grade": "*Средний уклон:*  `{}%`\n",
+            "pr_time": "*Ваш ЛР:*  `{}`  \\|",
+            "id": "подробнее: /segment{}\n\n"
         },
         "types": {
             "run": "забег",
@@ -172,10 +187,12 @@
         "segment": [
             "id", "name", "activity_type", "distance", "average_grade", "maximum_grade",
             "total_elevation_gain", "climg_category", "effort_count", "athlete_count",
-            "athlete_segment_stats", "xoms", "local_legend"]
+            "athlete_segment_stats", "xoms", "local_legend"],
+        "starred_segments": [
+            "id", "name", "distance", "average_grade", "activity_type", "pr_time"]
     },
     "convert_keys": {
-        "time": ["moving_time", "elapsed_time", "idle_time", "pr_elapsed_time"],
+        "time": ["moving_time", "elapsed_time", "idle_time", "pr_elapsed_time", "pr_time"],
         "distance": ["distance"],
         "speed": ["average_speed", "max_speed"],
         "date": ["start_date_local"]

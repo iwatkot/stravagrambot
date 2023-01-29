@@ -1,5 +1,6 @@
 import os
 import json
+from inspect import stack
 
 from re import escape
 from datetime import timedelta, datetime
@@ -9,13 +10,15 @@ absolute_path = os.path.dirname(__file__)
 logger = Logger(__name__)
 
 
-def get_template(filename):
+def get_template(filename: str):
+    """Returns data from the specified JSON file."""
     filepath = os.path.join(absolute_path, 'templates/{}.json'.format(
         filename))
     return json.load(open(filepath, encoding='utf-8'))
 
 
-def get_content(filename, lang):
+def get_content(filename: str, lang: str):
+    """Returns data from the specified TXT file with chosen language."""
     filepath = os.path.join(absolute_path, 'content{}_{}.txt'.format(
         filename, lang))
     return open(filepath, encoding='utf-8').readlines()
@@ -26,66 +29,116 @@ FORMATTER_TEMPLATES = get_template('formatter_templates')
 LOG_TEMPLATES = get_template('log_templates')['format_handler']
 
 
-def format_stats(stats, period, lang):
-    logger.debug(LOG_TEMPLATES['stats_init'].format(period, lang))
+def format_stats(raw_data: dict, period: str, lang: str):
+    """Formats stats raw data with specific template
+    and returns escaped message, ready for MD2 markup."""
+    logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
+        stack()[0][3], lang))
+
     useful_data = FORMATTER_TEMPLATES[lang]['stats']['periods'][period]
     divider = None
     if period == 'week':
+        # Finding number of the current week.
         divider = datetime.date(datetime.now()).isocalendar().week
+
     data = []
     for k, v in useful_data.items():
-        section = stats.get(k)
-        if section.get('count'):
-            section['header'] = v
-            insert_idle(section)
+        raw_section = raw_data.get(k)
+        if raw_section.get('count'):
+            raw_section['header'] = v
+            insert_idle(raw_section)
             if divider:
-                divide_stats(section, divider)
-            value_formatter(section, modify=True)
-            data.append(section)
+                divide_stats(raw_section, divider)
+            value_formatter(raw_section, modify=True)
+            data.append(raw_section)
+
     message = ''
     for section in data:
         message += use_format_template(section, lang, 'stats')
     return message
 
 
-def format_activities(activities, lang):
-    logger.debug(LOG_TEMPLATES['activities_init'].format(lang))
-    for activity in activities:
-        locale_type(activity, lang)
-        value_formatter(activity, modify=True)
+def format_activities(raw_data: list, lang: str):
+    """Formats list of activities raw data with specific template
+    and returns escaped message, ready for MD2 markup."""
+    logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
+        stack()[0][3], lang))
+    # Formatting each dict in the list.
+    for raw_section in raw_data:
+        locale_type(raw_section, lang)
+        value_formatter(raw_section, modify=True)
+    # Generating result message with template.
     message = ''
-    for activity in activities:
-        message += use_format_template(activity, lang, 'activities')
+    for section in raw_data:
+        message += use_format_template(section, lang, 'activities')
     return message
 
 
-def format_activity(activity, lang):
-    logger.debug(LOG_TEMPLATES['activity_init'].format(lang))
+def format_activity(raw_data: dict, lang: str):
+    """Formats activity raw data with specific template
+    and returns escaped message, ready for MD2 markup."""
+    logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
+        stack()[0][3], lang))
+
     USEFUL_DATA = FORMATTER_TEMPLATES['useful_data']['activity']
-    data = {k: activity.get(k) for k in USEFUL_DATA if activity.get(k)}
+    data = {k: raw_data.get(k) for k in USEFUL_DATA if raw_data.get(k)}
+    # Preparing data dict for formatting.
     locale_type(data, lang)
     insert_idle(data)
     insert_pace(data)
     data['gear_nickname'] = data.get('gear').get('nickname')
     segment_data = data.get('segment_efforts')
+    # Formatting values in the data dict.
     value_formatter(data, modify=True)
+    # Adding keys with new data.
     data['url'] = FORMATTER_URLS['activity_url'] + str(data.get('id'))
     data['download'] = data.get('id')
+    # Generating result message with template.
     message = use_format_template(
         data, lang, 'activity', segment_data=segment_data)
     return message
 
 
-def format_segment(segment, lang):
-    logger.debug(LOG_TEMPLATES['segment_init'].format(lang))
+def format_segment(raw_data: dict, lang: str):
+    """Formats segment raw data with specific template
+    and returns escaped message, ready for MD2 markup."""
+    logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
+        stack()[0][3], lang))
+
     USEFUL_DATA = FORMATTER_TEMPLATES['useful_data']['segment']
-    data = {k: segment.get(k) for k in USEFUL_DATA if segment.get(k)}
+    data = {k: raw_data.get(k) for k in USEFUL_DATA if raw_data.get(k)}
+    # Preparing data dict for formatting.
     data['type'] = data['activity_type']
     locale_type(data, lang)
     insert_segment_data(data)
+    # Formatting values in the data dict.
     value_formatter(data, modify=True)
     data['url'] = FORMATTER_URLS['segment_url'] + str(data.get('id'))
+    # Generating result message with template.
     message = use_format_template(data, lang, 'segment')
+    return message
+
+
+def format_starred_segments(raw_data: list, lang: str):
+    """Formats starred segments raw data with specific template
+    and returns escaped message, ready for MD2 markup."""
+    USEFUL_DATA = FORMATTER_TEMPLATES['useful_data']['starred_segments']
+    logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
+        stack()[0][3], lang))
+    # Formatting each dict in the list.
+    data = []
+    for raw_section in raw_data:
+        # Preparing data dict for formatting.
+        section = {k: raw_section.get(k) for k in USEFUL_DATA}
+        section['type'] = section['activity_type']
+        locale_type(section, lang)
+        # Formatting values in the data dict.
+        value_formatter(section, modify=True)
+        data.append(section)
+    # Generating result message with template.
+    message = ''
+    for section in data:
+        message += use_format_template(section, lang, 'starred_segments')
     return message
 
 
@@ -93,8 +146,7 @@ def value_formatter(data: dict, modify: bool):
     """Modifies the values in the dictonary with specific rules.
     Speed(m/s) to km/h. Time(s) to timedelta. Distance(m) to km.
     Zone aware datetime string to a local datetime string.
-    Other values will be filled fith escape symbolds for MD2.
-    :param bool modify: Modify the orignal dict or return a new one."""
+    Other values will be filled fith escape symbolds for MD2."""
     if not modify:
         data = data.copy()
     for key, value in data.items():
@@ -120,19 +172,21 @@ def insert_idle(data: dict):
     data['idle_percent'] = idle_percent
 
 
-def pace_formatter(speed):
+def pace_formatter(speed: int):
+    """Converts speed in m/s to pace format (time for 1 km)."""
     pace = datetime.strptime((
         str(timedelta(seconds=(round(1000 / speed))))), '%H:%M:%S')
     return escape(datetime.strftime(pace, '%M:%S'))
 
 
 def insert_pace(data: dict):
-    """Iserting average and maximum pace values into the dict."""
+    """Inserting average and maximum pace values into the dict."""
     data['average_pace'] = pace_formatter(data.get('average_speed'))
     data['max_pace'] = pace_formatter(data.get('max_speed'))
 
 
 def insert_segment_data(data: dict):
+    """Inserting segment data into the dict."""
     xom_data = data.get('xoms')
     athlete_data = data.get('athlete_segment_stats')
     local_legend = data.get('local_legend')
@@ -184,7 +238,8 @@ def divide_stats(data: dict, divider: int):
             data[k] = round((v) / divider, 2)
 
 
-def format_users(users):
+def format_users(users: list):
+    """Formatting list of strava ids from the database to MD2 with links."""
     message = '`List of users in the database:`\n\n'
     for user in users:
         id = user[0]
