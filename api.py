@@ -159,7 +159,6 @@ class APICaller:
             logger.debug(LOG_TEMPLATES['GOOD_RESPONSE'].format(
                 self.telegram_id))
             segment = response.json()
-            print(segment)
             return segment
         else:
             logger.error(LOG_TEMPLATES['BAD_RESPONSE'].format(

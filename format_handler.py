@@ -76,66 +76,17 @@ def format_activity(activity, lang):
     return message
 
 
-def segment(segment, lang='en'):        # REFACTOR
-    if segment:
-        logger.debug(LOG_TEMPLATES['segment_init'].format(lang))
-        useful_data = ['id', 'name', 'activity_type', 'distance',
-                       'average_grade', 'maximum_grade',
-                       'total_elevation_gain', 'climg_category',
-                       'effort_count', 'athlete_count',
-                       'athlete_segment_stats', 'xoms', 'local_legend']
-        segment_data = {k: segment.get(k) for k in useful_data}
-        segment_id = segment_data.get('id')
-        segment_name = segment_data.get('name')
-        activity_type = segment_data.get('activity_type').lower()
-        if lang != 'en':
-            localed_activity = FORMATTER_TEMPLATES[lang]['types'].get(
-                activity_type)
-            if localed_activity:
-                activity_type = localed_activity
-        distance = segment_data.get('distance')
-        average_grade = segment_data.get('average_grade')
-        maximum_grade = segment_data.get('maximum_grade')
-        elevation = segment_data.get('total_elevation_gain')
-        climb_category = segment_data.get('climb_category')
-        total_efforts = segment_data.get('effort_count')
-        total_athletes = segment_data.get('athlete_count')
-        athlete_stats = segment_data.get('athlete_segment_stats')
-        if athlete_stats:
-            pr_time = athlete_stats.get('pr_elapsed_time')
-            pr_time = timedelta(seconds=pr_time)
-            pr_date = athlete_stats.get('pr_date')
-            pr_id = athlete_stats.get('pr_activity_id')
-            efforts = athlete_stats.get('effort_count')
-        xoms = segment_data.get('xoms')
-        if xoms:
-            kom = xoms.get('kom')
-            qom = xoms.get('qom')
-        local_legend = segment_data.get('local_legend')
-        if local_legend:
-            ll_name = local_legend.get('title')
-            ll_efforts = local_legend.get('effort_count')
-        message = ''
-        message += FORMATTER_TEMPLATES[lang]['seg']['name_type'].format(
-            segment_name, activity_type)
-        if climb_category:
-            message += FORMATTER_TEMPLATES[lang]['seg']['cat'].format(
-                climb_category)
-        message += FORMATTER_TEMPLATES[lang]['seg']['dst_elev'].format(
-            distance, elevation)
-        message += FORMATTER_TEMPLATES[lang]['seg']['grade'].format(
-            average_grade, maximum_grade)
-        message += FORMATTER_TEMPLATES[lang]['seg']['segment_info'].format(
-            total_efforts, total_athletes)
-        message += FORMATTER_TEMPLATES[lang]['seg']['xoms'].format(
-            kom, qom)
-        message += FORMATTER_TEMPLATES[lang]['seg']['your_stats'].format(
-            pr_time, efforts, pr_date, pr_id)
-        message += FORMATTER_TEMPLATES[lang]['seg']['local_legend'].format(
-            ll_name, ll_efforts)
-        message += FORMATTER_TEMPLATES[lang]['seg']['strava_url'].format(
-            FORMATTER_URLS['segment_url'], segment_id)
-        return message
+def format_segment(segment, lang):
+    logger.debug(LOG_TEMPLATES['segment_init'].format(lang))
+    USEFUL_DATA = FORMATTER_TEMPLATES['useful_data']['segment']
+    data = {k: segment.get(k) for k in USEFUL_DATA if segment.get(k)}
+    data['type'] = data['activity_type']
+    locale_type(data, lang)
+    insert_segment_data(data)
+    value_formatter(data, modify=True)
+    data['url'] = FORMATTER_URLS['segment_url'] + str(data.get('id'))
+    message = use_format_template(data, lang, 'segment')
+    return message
 
 
 def value_formatter(data: dict, modify: bool):
@@ -179,6 +130,23 @@ def insert_pace(data: dict):
     """Iserting average and maximum pace values into the dict."""
     data['average_pace'] = pace_formatter(data.get('average_speed'))
     data['max_pace'] = pace_formatter(data.get('max_speed'))
+
+
+def insert_segment_data(data: dict):
+    xom_data = data.get('xoms')
+    athlete_data = data.get('athlete_segment_stats')
+    local_legend = data.get('local_legend')
+    if xom_data:
+        data['kom'] = xom_data.get('kom')
+        data['qom'] = xom_data.get('qom')
+    if athlete_data:
+        data['pr_elapsed_time'] = athlete_data.get('pr_elapsed_time')
+        data['athlete_effort_count'] = athlete_data.get('effort_count')
+        data['pr_date'] = athlete_data.get('pr_date')
+        data['pr_activity_id'] = athlete_data.get('pr_activity_id')
+    if local_legend:
+        data['ll_title'] = local_legend.get('title')
+        data['ll_efforts'] = local_legend.get('effort_count')
 
 
 def locale_type(data: dict, lang: str):

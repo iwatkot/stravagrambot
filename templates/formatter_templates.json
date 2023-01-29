@@ -28,10 +28,6 @@
             "type": "{} \\| ",
             "id": "more data: /activity{}\n\n"
         },
-        "acts": {
-            "date_name": "*{}* \\| `{}`\n",
-            "type_dist": "{distance} km {type} \\| more data: /activity{id}\n"
-        },
         "activity": {
             "start_date_local": "*{}* \\| ",
             "name": " `{}`\n",
@@ -60,16 +56,26 @@
                 "segment_list": "\n*Segments in activity:*\n",
                 "segment": "`{}` more data: /segment{}\n"}
         },
-        "seg": {
-            "name_type": "`{}`  \\({}\\)\n",
-            "cat": "*Climb category:*  `{}`\n",
-            "dst_elev": "*Distance:*  `{} m`  \\| *Elevation:*  `{} m`\n",
-            "grade": "*Average grade:* `{} %`  \\| *Maximum grade:*  `{} %`\n",
-            "segment_info": "*Total efforts:*  `{}`  \\| *Total athletes:*  `{}`\n",
-            "xoms": "*KOM time:*  `{}`  \\| *QOM time:*  `{}`\n",
-            "your_stats": "*Your best time:*  `{}`  \\| *Your efforts:*  `{}`\n*Best time date:*  `{}`  \\| *Activity:* /activity{}\n",
-            "local_legend": "*Local legend:*  `{}`  with  `{}`  efforts\n",
-            "strava_url": "\n[Check segment on Strava]({}{})\n"
+        "segment": {
+            "name": "`{}`  \\| ",
+            "activity_type": "{}\n",
+            "climb_category": "*Climb category:*  `{}`\n",
+            "distance": "*Distance*:  `{} m`  \\| ",
+            "total_elevation_gain": "*Elevation gain:*  `{} m`\n",
+            "average_grade": "*Average grade:*  `{}%`  \\| ",
+            "maximum_grade": "*Maximum grade:*  `{}%`\n",
+            "effort_count": "*Total efforts:*  `{}`  \\| ",
+            "athlete_count": "*Total athletes:*  `{}`\n",
+            "kom": "*KOM time:*  `{}`  \\| ",
+            "qom": "*QOM time:*  `{}`\n",
+            "pr_elapsed_time": "*Your PR:*  `{}`  \\| ",
+            "athlete_effort_count": "*Efforts:*  `{}`\n",
+            "pr_date": "*PR date:*  `{}`  \\| ",
+            "pr_activity_id": "*PR activity:* /activity{}\n",
+            "ll_title": "*Local legend:*  `{}`  ",
+            "ll_efforts": "with  `{}`  efforts\n",
+            "url": "\n[Check segment on Strava]({})"
+
         }
     },
     "ru": {
@@ -93,10 +99,6 @@
                     "ytd_ride_totals": "Статистика заездов по неделям",
                     "ytd_run_totals": "Статистика забегов по неделям"}
             }
-        },
-        "acts": {
-            "date_name": "*{}* \\| `{}`\n",
-            "type_dist": "{type} на {distance} км \\| подробнее: /activity{id}\n"
         },
         "activity": {
             "start_date_local": "*{}* \\| ",
@@ -133,16 +135,26 @@
             "type": "{} \\| ",
             "id": "подробнее: /activity{}\n\n"
         },
-        "seg": {
-            "name_type": "`{}`  \\({}\\)\n",
-            "cat": "*Категория подъёма:*  `{}`\n",
-            "dst_elev": "*Расстояние:*  `{} м`  \\| *Подъём:*  `{} м`\n",
-            "grade": "*Средний уклон:* `{} %`  \\| *Максимальный уклон:*  `{} %`\n",
-            "segment_info": "*Всего попыток:*  `{}`  \\| *Всего атлетов:*  `{}`\n",
-            "xoms": "*KOM время:*  `{}`  \\| *QOM время:*  `{}`\n",
-            "your_stats": "*Ваше лучшее время:*  `{}`  \\| *Ваши попытки:*  `{}`\n*Дата лучшего времени:*  `{}`  \\| *Тренировка:* /activity{}\n",
-            "local_legend": "*Local legend:*  `{}`  с  `{}`  попытками\n",
-            "strava_url": "\n[Посмотреть участок на сайте Strava]({}{})\n"
+        "segment": {
+            "name": "`{}`  \\| ",
+            "type": "{}\n",
+            "climb_category": "*Категория подъёма:*  `{}`\n",
+            "distance": "*Длина*:  `{} м`  \\| ",
+            "total_elevation_gain": "*Подъём:*  `{} м`\n",
+            "average_grade": "*Средний уклон:*  `{}%`  \\| ",
+            "maximum_grade": "*Максимальный уклон:*  `{}%`\n",
+            "effort_count": "*Всего попыток:*  `{}`  \\| ",
+            "athlete_count": "*Всего атлетов:*  `{}`\n",
+            "kom": "*KOM время:*  `{}`  \\| ",
+            "qom": "*QOM время:*  `{}`\n",
+            "pr_elapsed_time": "*Ваш ЛР:*  `{}`  \\| ",
+            "athlete_effort_count": "*Попытки:*  `{}`\n",
+            "pr_date": "*Дата ЛР:*  `{}`  \\| ",
+            "pr_activity_id": "*Тренировка с ЛР:* /activity{}\n",
+            "ll_title": "*Local legend:*  `{}`  ",
+            "ll_efforts": "с  `{}`  попытками\n",
+            "url": "\n[Посмотреть сегмент на сайте Strava]({})"
+
         },
         "types": {
             "run": "забег",
@@ -156,10 +168,14 @@
             "average_heartrate", "max_heartrate", "elev_high", "elev_low", "average_watts", "segment_efforts"],
         "stats": [
             "all_ride_totals", "all_run_totals", "all_swim_totals",
-            "ytd_ride_totals", "ytd_run_totals", "ytd_swim_totals"]
+            "ytd_ride_totals", "ytd_run_totals", "ytd_swim_totals"],
+        "segment": [
+            "id", "name", "activity_type", "distance", "average_grade", "maximum_grade",
+            "total_elevation_gain", "climg_category", "effort_count", "athlete_count",
+            "athlete_segment_stats", "xoms", "local_legend"]
     },
     "convert_keys": {
-        "time": ["moving_time", "elapsed_time", "idle_time"],
+        "time": ["moving_time", "elapsed_time", "idle_time", "pr_elapsed_time"],
         "distance": ["distance"],
         "speed": ["average_speed", "max_speed"],
         "date": ["start_date_local"]

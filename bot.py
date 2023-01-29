@@ -121,9 +121,14 @@ async def segment_handler(message: types.Message,
     telegram_id, lang, user_name = unpack_message(message)
     caller = APICaller(telegram_id=telegram_id)
     segment = caller.segment(segment_id)
-    formatted_segment = formatter.segment(segment=segment, lang=lang)
-    await bot.send_message(telegram_id, formatted_segment,
-                           parse_mode='MarkdownV2')
+    if segment:
+        formatted_segment = formatter.format_segment(
+            segment=segment, lang=lang)
+        await bot.send_message(telegram_id, formatted_segment,
+                               parse_mode='MarkdownV2')
+    else:
+        await bot.send_message(
+            telegram_id, BOT_TEMPLATES[lang]['NO_SEGMENT'])
 
 
 @dp.message_handler(regexp_commands=[r'/download?(?P<activity_id>\w+)'])
