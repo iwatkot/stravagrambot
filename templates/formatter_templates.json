@@ -6,6 +6,8 @@
             "distance": "*Distance:*  `{}`  km\n",
             "moving_time": "*Moving time:*  `{}` \\| ",
             "elapsed_time": "*Elapsed time:*  `{}`\n",
+            "average_speed": "*Average speed:*  `{} km\\/h` \\| ",
+            "average_pace": "*Average pace:*  `{}`\n",
             "idle_time": "*Idle time:*  `{}` \\| ",
             "idle_percent": "*Idle percent:*  `{} %`\n",
             "elevation_gain": "*Elevation gain:*  `{} m`\n\n",
@@ -49,7 +51,8 @@
             "elev_high": "*Highest elevation:* `{} m` \\| ",
             "elev_low": "*Lowest elevation:* `{} m`\n",
             "device_name": "*Workout recorded with:* {}\n",
-            "gear_nickname": "*Gear:* {}\n",
+            "gear_nickname": "*Gear:*  `{}`  \\| ",
+            "gear_id": "*Check distance:* /gear{}",
             "url": "\n[Check activity on Strava]({})\n",
             "download": "\n*Download GPX file:* /download{}\n",
             "segment_data": {
@@ -60,7 +63,7 @@
             "name": "`{}`  \\| ",
             "activity_type": "{}\n",
             "climb_category": "*Climb category:*  `{}`\n",
-            "distance": "*Distance*:  `{} m`  \\| ",
+            "distance": "*Distance*:  `{} km`  \\| ",
             "total_elevation_gain": "*Elevation gain:*  `{} m`\n",
             "average_grade": "*Average grade:*  `{}%`  \\| ",
             "maximum_grade": "*Maximum grade:*  `{}%`\n",
@@ -84,6 +87,10 @@
             "average_grade": "*Average grade:*  `{}%`\n",
             "pr_time": "*Your PR:*  `{}`  \\|",
             "id": "more data: /segment{}\n\n"
+        },
+        "gear": {
+            "nickname": "`{}` \\| ",
+            "converted_distance": "*Distance:*  `{} km `"
         }
     },
     "ru": {
@@ -93,9 +100,11 @@
             "distance": "*Расстояние:*  `{}`  km\n",
             "moving_time": "*В движении:*  `{}` \\| ",
             "elapsed_time": "*Общее время:*  `{}`\n",
+            "average_speed": "*Средняя скорость:*  `{} км\\/ч` \\| ",
+            "average_pace": "*Средний темп:*  `{}`\n",
             "idle_time": "*Бездействие:*  `{}` \\| ",
             "idle_percent": "*Процент бездействия:*  `{} %`\n",
-            "elevation_gain": "*Наборы высоты:*  `{} m`\n\n",
+            "elevation_gain": "*Набор высоты:*  `{} m`\n\n",
             "periods": {
                 "all": {
                     "all_ride_totals": "Статистика заездов за все время",
@@ -129,7 +138,8 @@
             "elev_high": "*Высшая точка:* `{} м` \\| ",
             "elev_low": "*Низшая точка:* `{} м`\n",
             "device_name": "*Тренировка записана с помощью:* {}\n",
-            "gear_nickname": "*Экипировка:* {}\n",
+            "gear_nickname": "*Экипировка:*  `{}`  \\|",
+            "gear_id": "*Проверить пробег:* /gear{}",
             "url": "\n[Посмотреть тренировку на сайте Strava]({})\n",
             "download": "\n*Скачать GPX файл:* /download{}\n",
             "segment_data": {
@@ -147,7 +157,7 @@
             "name": "`{}`  \\| ",
             "type": "{}\n",
             "climb_category": "*Категория подъёма:*  `{}`\n",
-            "distance": "*Длина*:  `{} м`  \\| ",
+            "distance": "*Длина*:  `{} км`  \\| ",
             "total_elevation_gain": "*Подъём:*  `{} м`\n",
             "average_grade": "*Средний уклон:*  `{}%`  \\| ",
             "maximum_grade": "*Максимальный уклон:*  `{}%`\n",
@@ -170,6 +180,10 @@
             "average_grade": "*Средний уклон:*  `{}%`\n",
             "pr_time": "*Ваш ЛР:*  `{}`  \\|",
             "id": "подробнее: /segment{}\n\n"
+        },
+        "gear": {
+            "nickname": "`{}` \\| ",
+            "converted_distance": "*Пробег:*  `{} км `"
         },
         "types": {
             "run": "забег",

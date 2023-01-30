@@ -46,6 +46,10 @@ def format_stats(raw_data: dict, period: str, lang: str):
         raw_section = raw_data.get(k)
         if raw_section.get('count'):
             raw_section['header'] = v
+            raw_section['average_speed'] = round(raw_section.get(
+                'distance') / raw_section.get('moving_time'), 2)
+            raw_section['average_pace'] = pace_formatter(
+                raw_section.get('average_speed'))
             insert_idle(raw_section)
             if divider:
                 divide_stats(raw_section, divider)
@@ -87,6 +91,7 @@ def format_activity(raw_data: dict, lang: str):
     insert_idle(data)
     insert_pace(data)
     data['gear_nickname'] = data.get('gear').get('nickname')
+    data['gear_id'] = data.get('gear').get('id')
     segment_data = data.get('segment_efforts')
     # Formatting values in the data dict.
     value_formatter(data, modify=True)
@@ -139,6 +144,14 @@ def format_starred_segments(raw_data: list, lang: str):
     message = ''
     for section in data:
         message += use_format_template(section, lang, 'starred_segments')
+    return message
+
+
+def format_gear(raw_data: dict, lang: str):
+    """Formats gear raw data with specific template
+    and returns escaped message, ready for MD2 markup."""
+    value_formatter(raw_data, modify=True)
+    message = use_format_template(raw_data, lang, 'gear')
     return message
 
 

@@ -25,15 +25,14 @@ The `WebHook` class is designed to handle Strava webhook subscription. It's also
 Very strange, but Strava API doesn't provide any option to download the GPX file for the activity, so the bot generates it by itself using data streams. The code, which handles GPX generating is literally copy-pasted from [PhysicsDan's GPXfromStravaAPI](https://github.com/PhysicsDan/GPXfromStravaAPI).
 
 ## Modules
-_in development_
-**api** -<br>
-**bot** -<br>
-**database_handler** -<br>
-**flask_server** -<br>
-**format_handler** -<br>
-**log_handler** -<br>
-**token_handler** -<br>
-**webhook_handler** -<br>
+**api** - handles data recieving from the API using information from database_handler and token_handler<br>
+**bot** - the main script, which handles interaction with telegram user<br>
+**database_handler** - handles operations with database, such as inserting data from the ouath_init() and getting access_tokens for API calls<br>
+**flask_server** - handles OAuth and webhooks request. Also provied access to simple webpages with some info<br>
+**format_handler** - handles the nastiest part of the bot: formatting raw data from the API to something that human can understand. Since the raw data sometimes is little bit weird, the module has a lot of functions to convert data.<br>
+**log_handler** - short and simple module, which provied Logger class all across the bot modules.<br>
+**token_handler** - handles API exchange tokens procedure: getting access token after init and refreshes the token, when it's expired.<br>
+**webhook_handler** - handles Strava webhook subscription (subscribe, view, delete).<br>
 
 ## Commands
 _List of inital commands, which shown in the main menu of the bot:_<br>
@@ -57,12 +56,11 @@ The bot will answer to admin commands only if user's Telegram ID is equal to `AD
 **/webhook<>** - The commands to handle Strava webhook subscription. view - to check current subscription, delete - to delete (if active), subscribe - to create a new subscription.<br>
 
 ## To-Do
-- Add content to `about` webpages.<br>
+- Comments and typehints for all modules (flask_server, format_handler, log_handler, token_handler, webhook_handler.<br>
 - User notifications from webhooks.<br>
-- Commands for accessing athlete's gear<br>
-- Commands for accessing athlete's routes<br>
 
 ## Changelog
+**2023/01/30** - Added average speed and pace for all stats commands.<br>
 **2023/01/29** - Added /starredsegments, whuch returns the list of athlete's starred segments.<br>
 **2023/01/29** - Complete refactoring of format_handler.py. Partial refactoring of bot.py.<br>
 **2023/01/27** - Added segements to the activity, added /segment command to check the segments. Added logger to the format_handler.<br>

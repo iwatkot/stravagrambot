@@ -9,7 +9,8 @@
         "activity": "https://www.strava.com/api/v3/activities/{}",
         "streams": "https://www.strava.com/api/v3/activities/{}/streams",
         "segment": "https://www.strava.com/api/v3/segments/{}",
-        "starred_segments": "https://www.strava.com/api/v3/segments/starred"
+        "starred_segments": "https://www.strava.com/api/v3/segments/starred",
+        "gear": "https://www.strava.com/api/v3/gear/{}"
     },
     "formatter": {
         "activity_url": "https://www\\.strava\\.com/activities/",

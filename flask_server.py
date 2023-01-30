@@ -91,15 +91,15 @@ def locale_check(request):
 
 
 def oauth_init(telegram_id, code):
-    token = Token(telegram_id=telegram_id, code=code)
+    token = Token(telegram_id, code=code)
     auth_data = token.exchange()
     if auth_data:
-        oauth_session = DataBase(auth_data=auth_data)
+        oauth_session = DataBase(telegram_id, auth_data)
         if not oauth_session.connection:
             logger.error(LOG_TEMPLATES['NOT_CONNECTED'])
             return None
         if oauth_session.in_database():
-            oauth_session.modify_data(action='update')
+            oauth_session.modify_data('update')
         else:
             oauth_session.modify_data()
         oauth_session.disconnect()

@@ -1,7 +1,5 @@
 {
     "database_handler": {
-        "DB_INIT_TELEGRAM_ID": "The Database initiated with Telegram ID: [{}].",
-        "DB_INIT_AUTH_DATA": "The Database initiated with auth_data for Telegram ID: [{}].",
         "CONNECTED": "Connection to the database is established for Telegram ID: [{}].",
         "DISCONNECTED": "Connection to the database is closed for Telegram ID: [{}].",
         "NO_CONNECTION": "Connection to the database has been tried to close while no active connection.",
@@ -50,18 +48,9 @@
         "UPDATE_TOCKEN_FAILED": "The update of the token for Telegram ID: [{}] has failed due to bad API response.",
         "INIT": "API caller initiated for Telegram ID: [{}].",
         "NO_TOKEN": "Can't get the acccess token from the database for Telegram ID: [{}].",
-        "GET_STATS": "Calling the API with get_stats request for Telegram ID: [{}].",
-        "GOOD_RESPONSE": "Recieved good response from the API for Telegram ID: [{}].",
-        "BAD_RESPONSE": "Recieved bad response from the API for Telegram ID: [{}].",
-        "ACTIVITIES": "Calling the API with activities request for Telegram ID: [{}].",
-        "ACTIVITY": "Calling the API with activity request for Telegram ID: [{}].",
-        "GPX_DIR_CREATED": "Successfully created gpx directory.",
-        "GPX_ALREADY_EXISTS": "The gpx directory is already exists.",
-        "TOKEN_RETRIEVED": "The acccess token successfully retrieved for the Telegram ID: [{}].",
         "GPX_STARTED": "GPX creating started for the strava activity with ID: [{}].",
         "GPX_RETRIEVE_ERROR": "Can't extract the correct data from the API response for activity with ID: [{}].",
-        "GPX_CREATED": "GPX file successfully created with filename: [{}].",
-        "SEGMENT": "Calling the API with segment request for Telegram ID: [{}]."
+        "GPX_CREATED": "GPX file successfully created with filename: [{}]."
     },
     "main": {
         "MESSAGE_FROM_USER": "The telegram user with ID [{}] send bot the message: [{}]."

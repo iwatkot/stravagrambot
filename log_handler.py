@@ -4,10 +4,7 @@ import sys
 
 absolute_path = os.path.dirname(__file__)
 
-try:
-    os.mkdir(os.path.join(absolute_path, 'logs'))
-except FileExistsError:
-    pass
+os.makedirs(os.path.join(absolute_path, 'logs'), exist_ok=True)
 
 LOG_FORMATTER = "%(name)s | %(asctime)s | %(levelname)s | %(message)s"
 LOG_FILE = os.path.join(absolute_path, 'logs/main_log.txt')
