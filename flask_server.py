@@ -9,7 +9,6 @@ from format_handler import get_template, get_content
 from database_handler import DataBase
 from log_handler import Logger
 from token_handler import Token
-from sender import handle_webhook
 
 FLASK_TEMPLATES = get_template('flask_templates')
 LOG_TEMPLATES = get_template('log_templates')['flask_server']
@@ -38,7 +37,6 @@ def webhook_catcher():
     if request.content_type == 'application/json':
         json_data = request.json
         logger.info(LOG_TEMPLATES['WEBHOOK_RECIEVED'].format(json_data))
-        handle_webhook(json_data)
     return '', 200
 
 

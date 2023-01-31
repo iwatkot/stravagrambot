@@ -47,7 +47,7 @@ class APICaller:
         and updates token in the database."""
         token_session = DataBase(telegram_id=self.telegram_id)
         if token_session.in_database():
-            self.strava_id = token_session.get_id()
+            self.strava_id = token_session.get_strava_id()
             token_expired = token_session.token_expired()
             if token_expired:
                 # Launching refresh token procedure, if it's expired.
@@ -75,7 +75,6 @@ class APICaller:
     def get_stats(self) -> dict:
         """Makes call to the API to recieve athlete's stats."""
         url = Urls.GET_STATS.value.format(self.strava_id)
-        print(url)
         response = requests.get(url, headers=self.headers)
         if response.status_code == 200:
             return response.json()

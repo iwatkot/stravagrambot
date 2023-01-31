@@ -123,31 +123,17 @@ class DataBase:
         cursor.close()
         return db_response
 
-    def get_lang(self) -> str:
-        cursor = self.connection.cursor()
-        get_lang_query = QUERY_TEMPLATES['get_lang_query'].format(
-                self.telegram_id)
-        cursor.execute(get_lang_query)
-        lang = cursor.fetchone()[0]
-        cursor.close()
-        return lang
-
-    def get_id(self, strava_id: int = None) -> int:
-        """Returns strava_id from the database or the Telegram id if the
-        function was called with strava_id."""
+    def get_strava_id(self) -> int:
+        """Returns strava_id from the database."""
         logger.debug(LOG_TEMPLATES['GETTING_STRAVA_ID'].format(
             self.telegram_id))
         cursor = self.connection.cursor()
-        if strava_id:
-            get_id_query = QUERY_TEMPLATES['get_telegram_id_query'].format(
-                strava_id)
-        else:
-            get_id_query = QUERY_TEMPLATES['get_strava_id_query'].format(
-                self.telegram_id)
-        cursor.execute(get_id_query)
-        got_id = cursor.fetchone()[0]
+        get_strava_id_query = QUERY_TEMPLATES['get_strava_id_query'].format(
+            self.telegram_id)
+        cursor.execute(get_strava_id_query)
+        strava_id = cursor.fetchone()[0]
         cursor.close()
-        return got_id
+        return strava_id
 
     def get_users(self) -> list:
         """Returns list of all users (strava_id) in th database."""
@@ -158,35 +144,3 @@ class DataBase:
         users = cursor.fetchall()
         cursor.close()
         return users
-
-    def notify(self, switch: bool = False) -> bool:
-        """Returns notify status in database, or switches it, if switch arg
-        is True."""
-        cursor = self.connection.cursor()
-        notify_status_query = QUERY_TEMPLATES['notify_status_query'].format(
-            self.telegram_id)
-        cursor.execute(notify_status_query)
-        notify_status = cursor.fetchone()[0]
-        if switch:
-            notify_switch_query = QUERY_TEMPLATES[
-                'notify_switch_query'].format(
-                    not notify_status, self.telegram_id)
-            cursor.execute(notify_switch_query)
-            self.connection.commit()
-            return not notify_status
-        else:
-            return notify_status
-
-    def change_lang(self) -> str:
-        """Changes language of user in database."""
-        old_lang = self.get_lang()
-        cursor = self.connection.cursor()
-        if old_lang == 'en':
-            new_lang = 'ru'
-        else:
-            new_lang = 'en'
-        change_lang_query = QUERY_TEMPLATES['change_lang_query'].format(
-            new_lang, self.telegram_id)
-        cursor.execute(change_lang_query)
-        self.connection.commit()
-        return new_lang

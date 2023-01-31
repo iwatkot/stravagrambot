@@ -55,10 +55,9 @@ The bot will answer to admin commands only if user's Telegram ID is equal to `AD
 **/users** - Sends back the complete users list with links to Strava accounts.<br>
 **/webhook<>** - The commands to handle Strava webhook subscription. view - to check current subscription, delete - to delete (if active), subscribe - to create a new subscription.<br>
 
-## To-Do
-- User notifications from webhooks.<br>
 
 ## Changelog
+**2023/01/31** - Massive refactoring of most modules.<br>
 **2023/01/30** - Added average speed and pace for all stats commands.<br>
 **2023/01/29** - Added /starredsegments, whuch returns the list of athlete's starred segments.<br>
 **2023/01/29** - Complete refactoring of format_handler.py. Partial refactoring of bot.py.<br>
