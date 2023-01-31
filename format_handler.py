@@ -153,6 +153,11 @@ def format_gear(raw_data: dict, lang: str) -> str:
     return message
 
 
+def timez_formatter(timestr):
+    unpacked_time = datetime.strptime(timestr, '%Y-%m-%dT%H:%M:%SZ')
+    return escape(datetime.strftime(unpacked_time, '%Y-%m-%d %H:%m'))
+
+
 def value_formatter(data: dict) -> None:
     """Modifies the values in the dictonary with specific rules.
     Speed(m/s) to km/h. Time(s) to timedelta. Distance(m) to km.
@@ -166,8 +171,7 @@ def value_formatter(data: dict) -> None:
         elif key in FORMATTER_TEMPLATES['convert_keys']['speed']:
             data[key] = escape(str(round(value * 3.6, 2)))
         elif key in FORMATTER_TEMPLATES['convert_keys']['date']:
-            time = datetime.fromisoformat(value)
-            data[key] = escape(datetime.strftime(time, '%Y-%m-%d %H:%M'))
+            data[key] = timez_formatter(value)
         else:
             data[key] = escape(str(value).strip())
 
