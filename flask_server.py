@@ -9,6 +9,7 @@ from format_handler import get_template, get_content
 from database_handler import DataBase
 from log_handler import Logger
 from token_handler import Token
+from sender import handle_webhook
 
 FLASK_TEMPLATES = get_template('flask_templates')
 LOG_TEMPLATES = get_template('log_templates')['flask_server']
@@ -21,7 +22,7 @@ app = Flask(__name__)
 bootstrap = Bootstrap4(app)
 
 
-@app.route(FLASK_TEMPLATES['oauth']['webhooks_marker'], methods=["GET"])
+@app.route('/webhooks/', methods=["GET"])
 def webhook_challenge():
     logger.debug(LOG_TEMPLATES['GET_REQUEST'].format(request.full_path))
     verify_token = request.args.get('hub.verify_token')
@@ -32,15 +33,16 @@ def webhook_challenge():
         return json.dumps({'hub.challenge': hub_challenge}), 200
 
 
-@app.route(FLASK_TEMPLATES['oauth']['webhooks_marker'], methods=["POST"])
+@app.route('/webhooks/', methods=["POST"])
 def webhook_catcher():
     if request.content_type == 'application/json':
         json_data = request.json
         logger.info(LOG_TEMPLATES['WEBHOOK_RECIEVED'].format(json_data))
+        handle_webhook(json_data)
     return '', 200
 
 
-@app.route(FLASK_TEMPLATES['oauth']['oauth_marker'])
+@app.route('/stravagramoauth')
 def oauth():
     lang = 'ru' if request.accept_languages.best_match(
         SUPPORTED_LANGUAGES) == 'ru' else 'en'
@@ -84,13 +86,16 @@ def pages():
         context=context, content=content)
 
 
-def locale_check(request):
+def locale_check(request) -> str:
+    """Returns the language code of GET request."""
     lang = 'ru' if request.accept_languages.best_match(
         SUPPORTED_LANGUAGES) == 'ru' else 'en'
     return lang
 
 
-def oauth_init(telegram_id, code):
+def oauth_init(telegram_id: int, code: str) -> None:
+    """Initiates token exchange procedure with code recieved from
+    OAuth GET request."""
     token = Token(telegram_id, code=code)
     auth_data = token.exchange()
     if auth_data:

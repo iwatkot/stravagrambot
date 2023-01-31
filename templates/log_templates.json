@@ -52,9 +52,6 @@
         "GPX_RETRIEVE_ERROR": "Can't extract the correct data from the API response for activity with ID: [{}].",
         "GPX_CREATED": "GPX file successfully created with filename: [{}]."
     },
-    "main": {
-        "MESSAGE_FROM_USER": "The telegram user with ID [{}] send bot the message: [{}]."
-    },
     "format_handler": {
         "stats_init": "Starting formatting stats for period [{}] with language [{}].",
         "activities_init": "Starting formatting activities with language [{}].",

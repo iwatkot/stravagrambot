@@ -9,6 +9,8 @@ logger = Logger(__name__)
 
 
 class WebHook:
+    """Handles Strava webhook service subscription. Uses methods to
+    subscrive, view or delete active webhook subscription."""
     def __init__(self):
         self.client_id = config('CLIENT_ID')
         self.client_secret = config('CLIENT_SECRET')
@@ -21,7 +23,8 @@ class WebHook:
         }
         self.subcription_id = None
 
-    def subscribe(self):
+    def subscribe(self) -> int | None:
+        """Initiates a new webhook subscription. Returns id or None."""
         data = self.params
         data.update({
             'callback_url': self.callback_url,
@@ -43,7 +46,9 @@ class WebHook:
                 response.json()))
         return self.subcription_id
 
-    def view(self):
+    def view(self) -> int | None:
+        """Making request to check if the active subscription is exists.
+        Returns subscription id or None."""
         logger.debug(LOG_TEMPLATES['VIEW_REQUESTED'])
         response = requests.get(self.api_url, params=self.params)
         if response.status_code == 200:
@@ -60,7 +65,10 @@ class WebHook:
             self.subcription_id = None
         return self.subcription_id
 
-    def delete(self):
+    def delete(self) -> bool:
+        """Initiates webhook subscription deleting. Returns bool depending
+        of request result."""
+        self.view()
         logger.debug(LOG_TEMPLATES['DELETE_REQUESTED'])
         response = requests.delete(self.api_url + '/{}'.format(
             self.subcription_id), params=self.params)
@@ -69,3 +77,4 @@ class WebHook:
             return True
         else:
             logger.error(LOG_TEMPLATES['NO_SUB_TO_DELETE'])
+            return False

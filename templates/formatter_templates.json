@@ -3,7 +3,7 @@
         "stats": {
             "header": "`{}`\n",
             "count": "*Number:*  `{}` \\| ",
-            "distance": "*Distance:*  `{}`  km\n",
+            "distance": "*Distance:*  `{} km`\n",
             "moving_time": "*Moving time:*  `{}` \\| ",
             "elapsed_time": "*Elapsed time:*  `{}`\n",
             "average_speed": "*Average speed:*  `{} km\\/h` \\| ",
@@ -97,14 +97,14 @@
         "stats": {
             "header": "`{}`\n",
             "count": "*Количество:*  `{}` \\| ",
-            "distance": "*Расстояние:*  `{}`  km\n",
+            "distance": "*Расстояние:*  `{} км`\n",
             "moving_time": "*В движении:*  `{}` \\| ",
             "elapsed_time": "*Общее время:*  `{}`\n",
             "average_speed": "*Средняя скорость:*  `{} км\\/ч` \\| ",
             "average_pace": "*Средний темп:*  `{}`\n",
             "idle_time": "*Бездействие:*  `{}` \\| ",
             "idle_percent": "*Процент бездействия:*  `{} %`\n",
-            "elevation_gain": "*Набор высоты:*  `{} m`\n\n",
+            "elevation_gain": "*Набор высоты:*  `{} м`\n\n",
             "periods": {
                 "all": {
                     "all_ride_totals": "Статистика заездов за все время",
@@ -190,26 +190,12 @@
             "ride": "заезд"
         }
     },
-    "useful_data": {
-        "activity": [
-            "start_date_local", "name", "description", "id", "distance", "type", "average_speed", "max_speed",
-            "total_elevation_gain", "moving_time", "elapsed_time", "device_name", "gear", "has_heartrate",
-            "average_heartrate", "max_heartrate", "elev_high", "elev_low", "average_watts", "segment_efforts"],
-        "stats": [
-            "all_ride_totals", "all_run_totals", "all_swim_totals",
-            "ytd_ride_totals", "ytd_run_totals", "ytd_swim_totals"],
-        "segment": [
-            "id", "name", "activity_type", "distance", "average_grade", "maximum_grade",
-            "total_elevation_gain", "climg_category", "effort_count", "athlete_count",
-            "athlete_segment_stats", "xoms", "local_legend"],
-        "starred_segments": [
-            "id", "name", "distance", "average_grade", "activity_type", "pr_time"]
-    },
     "convert_keys": {
         "time": ["moving_time", "elapsed_time", "idle_time", "pr_elapsed_time", "pr_time"],
         "distance": ["distance"],
         "speed": ["average_speed", "max_speed"],
         "date": ["start_date_local"]
     },
-    "relative_keys": ["count", "distance", "moving_time", "elapsed_time", "idle_time", "elevation_gain"]
+    "relative_keys": ["count", "distance", "moving_time", "elapsed_time", "idle_time", "elevation_gain"],
+    "users_template": "`List of users \\(`{}`\\) in the database:`\n\n"
 }

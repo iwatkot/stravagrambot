@@ -12,7 +12,12 @@
         "NO_ACTIVITIES": "There're no activites in the specified period of time.",
         "NO_STATS": "There're no actual activities in your Stava account.",
         "NO_SEGMENT": "The bot can't find the specified segment.",
-        "NO_ACTIVITY": "The bot can't find the specified activity."
+        "NO_ACTIVITY": "The bot can't find the specified activity.",
+        "NO_STARRED_SEG": "The bot can't find any starred segments in your Strava account.",
+        "NO_GEAR": "The bot can't find the specified gear.",
+        "NOTIFY_TRUE": "You're  `subscribed`  to notifications about new workouts\\. To cancel the subscription use \\/notify command\\.",
+        "NOTIFY_FALSE": "You're  `not subscribed`  to notifications about new workouts\\. To activate the subscription use \\/notify command\\.",
+        "WHLANG": "Your current language for webhooks is  `{}`  now\\."
     },
     "ru": {
         "/start": "Здравствуй, {}\\! С помощью этого бота ты можешь получить доступ к своим тренировкам на Strava\\.\nЧтобы начать пользоваться ботом, используй команду /auth\\.\n*Powered by Strava*\\.",
@@ -27,7 +32,12 @@
         "NO_ACTIVITIES": "В указанном промежутке времени нет тренировок.",
         "NO_STATS": "В вашем аккаунте Strava нет подходящих тренировок.",
         "NO_SEGMENT": "Бот не смог найти указанный сегмент.",
-        "NO_ACTIVITY": "Бот не смог найти указанную тренировку."
+        "NO_ACTIVITY": "Бот не смог найти указанную тренировку.",
+        "NO_STARRED_SEG": "Бот не смог найти избранных участков в вашем аккаунте Strava.",
+        "NO_GEAR": "Бот не смог найти указанную экипировку.",
+        "NOTIFY_TRUE": "Вы  `подписаны`  на обновления о новых тренировках\\. Чтобы отменить подписку используйте команду \\/notify\\.",
+        "NOTIFY_FALSE": "Вы  `не подписаны`  на обновления о новых тренировках\\. Чтобы активировать подписку используйте команду \\/notify\\.",
+        "WHLANG": "Ваш текущий язык для обновлений:  `{}`\\."
     },
     "admin": {
         "WH_SUB_GOOD": "Successfully subscribed to Webhooks with id: [{}].",
@@ -43,5 +53,7 @@
             "/statsyear": "year",
             "/weekavg": "week"
         }
-    }
+    },
+    "log_entry": "The telegram user with ID [{}] send bot the message: [{}].",
+    "oauth_url": "http://www\\.strava\\.com/oauth/authorize?client\\_id\\=13782&response\\_type\\=code&redirect\\_uri\\=http://stravagram\\.space/stravagramoauth?telegram_id={}&exchange\\_token&approval\\_prompt\\=force&scope\\=read\\_all,activity:read\\_all"
 }

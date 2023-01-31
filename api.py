@@ -4,7 +4,7 @@ import gpxpy.gpx
 
 import pandas as pd
 
-
+from enum import Enum
 from datetime import datetime, timedelta
 
 from format_handler import get_template
@@ -12,12 +12,21 @@ from database_handler import DataBase
 from token_handler import Token
 from log_handler import Logger
 
-API_URLS = get_template('url_templates')['API']
 LOG_TEMPLATES = get_template('log_templates')['api']
 logger = Logger(__name__)
 
 absolute_path = os.path.dirname(__file__)
 os.makedirs(os.path.join(absolute_path, 'gpx'), exist_ok=True)
+
+
+class Urls(Enum):
+    GET_STATS = "https://www.strava.com/api/v3/athletes/{}/stats"
+    GET_ACTIVITIES = "https://www.strava.com/api/v3/athlete/activities"
+    get_activity = "https://www.strava.com/api/v3/activities/{}"
+    CREATE_GPX = "https://www.strava.com/api/v3/activities/{}/streams"
+    get_segment = "https://www.strava.com/api/v3/segments/{}"
+    get_starred_segments = "https://www.strava.com/api/v3/segments/starred"
+    get_gear = "https://www.strava.com/api/v3/gear/{}"
 
 
 class APICaller:
@@ -38,7 +47,7 @@ class APICaller:
         and updates token in the database."""
         token_session = DataBase(telegram_id=self.telegram_id)
         if token_session.in_database():
-            self.strava_id = token_session.get_strava_id()
+            self.strava_id = token_session.get_id()
             token_expired = token_session.token_expired()
             if token_expired:
                 # Launching refresh token procedure, if it's expired.
@@ -65,7 +74,15 @@ class APICaller:
 
     def get_stats(self) -> dict:
         """Makes call to the API to recieve athlete's stats."""
-        url = API_URLS['get_stats'].format(self.strava_id)
+        url = Urls.GET_STATS.value.format(self.strava_id)
+        print(url)
+        response = requests.get(url, headers=self.headers)
+        if response.status_code == 200:
+            return response.json()
+
+    def raw_data(self, **kwargs) -> dict:
+        """Making simple API calls and returns dict with raw data."""
+        url = Urls[list(kwargs.keys())[0]].value.format(*kwargs.values())
         response = requests.get(url, headers=self.headers)
         if response.status_code == 200:
             return response.json()
@@ -73,7 +90,7 @@ class APICaller:
     def get_activities(self, after: int = None, before: int = None) -> list:
         """Returns the list of the activities
         in the specified period of time"""
-        url = API_URLS['activities']
+        url = Urls.GET_ACTIVITIES.value
         # If period of time wasn't specified, using 60 days before now.
         if not after and not before:
             before = int(datetime.now().timestamp())
@@ -87,23 +104,13 @@ class APICaller:
         if response.status_code == 200:
             return response.json()[::-1]
 
-    def get_activity(self, activity_id: int) -> dict:
-        """Returns dictionary with raw activity data."""
-        self.activity_id = activity_id
-        url = API_URLS['activity'].format(activity_id)
-        params = {'include_all_efforts': 'False'}
-        response = requests.get(url, params=params, headers=self.headers)
-        if response.status_code == 200:
-            activity = response.json()
-            # Start time is needed for create_gpx() to avoid second API call.
-            self.start_time = activity.get('start_date_local')
-            return activity
-
-    def create_gpx(self) -> str:
+    def create_gpx(self, activity_id: int) -> str:
         """Creates GPX files from API streams request,
         returns the path to the file."""
-        logger.debug(LOG_TEMPLATES['GPX_STARTED'].format(self.activity_id))
-        url = API_URLS['streams'].format(self.activity_id)
+        logger.debug(LOG_TEMPLATES['GPX_STARTED'].format(activity_id))
+        start_time = self.raw_data(
+            get_activity=activity_id).get('start_date_local')
+        url = Urls.CREATE_GPX.value.format(activity_id)
         try:
             latlong = requests.get(
                 url, headers=self.headers,
@@ -116,12 +123,12 @@ class APICaller:
                 params={'keys': ['altitude']}).json()[1]['data']
         except Exception:
             logger.error(LOG_TEMPLATES['GPX_RETRIEVE_ERROR'].format(
-                self.activity_id))
+                activity_id))
             return None
 
         data = pd.DataFrame([*latlong], columns=['lat', 'long'])
         data['altitude'] = altitude
-        start = datetime.strptime(self.start_time, "%Y-%m-%dT%H:%M:%SZ")
+        start = datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%SZ")
         data['time'] = [(start+timedelta(seconds=t)) for t in time_list]
 
         gpx = gpxpy.gpx.GPX()
@@ -137,30 +144,8 @@ class APICaller:
                                       time=data.loc[idx, 'time']))
 
         filepath = os.path.join(
-            absolute_path, 'gpx/{}.gpx'.format(self.activity_id))
+            absolute_path, 'gpx/{}.gpx'.format(activity_id))
         with open(filepath, 'w') as gpxf:
             gpxf.write(gpx.to_xml())
         logger.info(LOG_TEMPLATES['GPX_CREATED'].format(filepath))
         return filepath
-
-    def get_segment(self, segment_id: int) -> dict:
-        """Returns dictionary with raw segment data."""
-        url = API_URLS['segment'].format(segment_id)
-        response = requests.get(url, headers=self.headers)
-        if response.status_code == 200:
-            segment = response.json()
-            return segment
-
-    def get_starred_segments(self) -> list:
-        """Returns list with raw starred segments data."""
-        url = API_URLS['starred_segments']
-        response = requests.get(url, headers=self.headers)
-        if response.status_code == 200:
-            return response.json()
-
-    def get_gear(self, gear_id: int) -> dict:
-        """Returns dictionary with raw gear data."""
-        url = API_URLS['gear'].format(gear_id)
-        response = requests.get(url, headers=self.headers)
-        if response.status_code == 200:
-            return response.json()

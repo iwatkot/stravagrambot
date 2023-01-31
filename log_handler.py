@@ -11,7 +11,8 @@ LOG_FILE = os.path.join(absolute_path, 'logs/main_log.txt')
 
 
 class Logger(logging.getLoggerClass()):
-    def __init__(self, name):
+    """Handles logging to the file and stroudt with timestamps."""
+    def __init__(self, name: str):
         super().__init__(name)
         self.setLevel(logging.DEBUG)
         self.stdout_handler = logging.StreamHandler(sys.stdout)
@@ -22,3 +23,8 @@ class Logger(logging.getLoggerClass()):
         self.file_handler.setFormatter(logging.Formatter(LOG_FORMATTER))
         self.addHandler(self.stdout_handler)
         self.addHandler(self.file_handler)
+
+
+def get_log_file() -> str:
+    """Returns the path to the main_log file."""
+    return LOG_FILE

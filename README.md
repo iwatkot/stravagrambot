@@ -56,7 +56,6 @@ The bot will answer to admin commands only if user's Telegram ID is equal to `AD
 **/webhook<>** - The commands to handle Strava webhook subscription. view - to check current subscription, delete - to delete (if active), subscribe - to create a new subscription.<br>
 
 ## To-Do
-- Comments and typehints for all modules (flask_server, format_handler, log_handler, token_handler, webhook_handler.<br>
 - User notifications from webhooks.<br>
 
 ## Changelog

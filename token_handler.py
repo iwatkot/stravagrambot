@@ -5,20 +5,24 @@ from decouple import config
 from format_handler import get_template
 from log_handler import Logger
 
-OAUTH_URLS = get_template('url_templates')['oauth']
+STRAVA_API = "https://www.strava.com/api/v3/oauth/token"
 LOG_TEMPLATES = get_template('log_templates')['token_handler']
 logger = Logger(__name__)
 
 
 class Token():
-    def __init__(self, telegram_id, code=None, refresh_token=None):
+    """Handles token exchange procedure with Strava API."""
+    def __init__(self, telegram_id: int,
+                 code: str = None, refresh_token: str = None):
         self.client_id = config('CLIENT_ID')
         self.client_secret = config('CLIENT_SECRET')
         self.telegram_id = telegram_id
         self.refresh_token = refresh_token
         self.code = code
 
-    def exchange(self):
+    def exchange(self) -> None:
+        """Exchange tokens (code or refresh token for access token) and
+        writes it into the database."""
         data = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
@@ -29,7 +33,7 @@ class Token():
         else:
             data['code'] = self.code
             data['grant_type'] = 'authorization_code'
-        raw_response = requests.post(OAUTH_URLS['strava_oauth'], data=data)
+        raw_response = requests.post(STRAVA_API, data=data)
         if raw_response.status_code == 200:
             response = raw_response.json()
             logger.info(LOG_TEMPLATES['RESPONSE_FROM_API'].format(

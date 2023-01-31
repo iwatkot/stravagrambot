@@ -1,8 +1,7 @@
 import asyncio
 import re
-import os
+import subprocess
 
-from multiprocessing import Process
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
@@ -14,17 +13,13 @@ import format_handler as formatter
 
 from webhook_handler import WebHook
 from database_handler import DataBase
-from flask_server import run_server
 from format_handler import get_template
 from api import APICaller
-from log_handler import Logger
+from log_handler import Logger, get_log_file
 
 logger = Logger('bot')
 TOKEN = config('TOKEN')
 BOT_TEMPLATES = get_template('bot_templates')
-URL_TEMPLATES = get_template('url_templates')
-LOG_TEMPLATES = get_template('log_templates')['main']
-LOG_FILE = os.path.join(os.path.dirname(__file__), 'logs/main_log.txt')
 ADMIN = int(config('ADMIN'))
 
 storage = MemoryStorage()
@@ -51,7 +46,7 @@ async def start_handler(message: types.Message):
 async def auth_handler(message: types.Message):
     """Handles the /auth command."""
     telegram_id, lang, user_name = unpack_message(message)
-    auth_url = URL_TEMPLATES['oauth']['access_request'].format(telegram_id)
+    auth_url = BOT_TEMPLATES['oauth_url'].format(telegram_id)
     await message.reply(BOT_TEMPLATES[lang][message.text].format(auth_url),
                         parse_mode='MarkdownV2')
 
@@ -62,6 +57,7 @@ async def recent_handler(message: types.Message):
     telegram_id, lang, user_name = unpack_message(message)
     caller = APICaller(telegram_id)
     raw_data = caller.get_activities()
+    caller.disconnect()
     if raw_data:
         data = formatter.format_activities(raw_data, lang)
         await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
@@ -75,10 +71,14 @@ async def starred_segments_handler(message: types.Message):
     """Handles the /starredsegments command."""
     telegram_id, lang, user_name = unpack_message(message)
     caller = APICaller(telegram_id)
-    raw_data = caller.get_starred_segments()
+    raw_data = caller.raw_data(get_starred_segments=True)
+    caller.disconnect()
     if raw_data:
         data = formatter.format_starred_segments(raw_data, lang)
         await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
+    else:
+        await bot.send_message(
+            telegram_id, BOT_TEMPLATES[lang]['NO_STARRED_SEG'])
 
 
 @dp.message_handler(commands=["statsall", "statsyear", "weekavg"])
@@ -105,7 +105,8 @@ async def activity_handler(message: types.Message,
     telegram_id, lang, user_name = unpack_message(message)
     value = regexp_command['value']
     caller = APICaller(telegram_id)
-    raw_data = caller.get_activity(value)
+    raw_data = caller.raw_data(get_activity=value)
+    caller.disconnect()
     if raw_data:
         data = formatter.format_activity(raw_data, lang)
         await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
@@ -120,7 +121,8 @@ async def segment_handler(message: types.Message,
     telegram_id, lang, user_name = unpack_message(message)
     value = regexp_command['value']
     caller = APICaller(telegram_id)
-    raw_data = caller.get_segment(value)
+    raw_data = caller.raw_data(get_segment=value)
+    caller.disconnect()
     if raw_data:
         data = formatter.format_segment(raw_data, lang)
         await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
@@ -135,8 +137,7 @@ async def download_handler(message: types.Message,
     telegram_id, lang, user_name = unpack_message(message)
     value = regexp_command['value']
     caller = APICaller(telegram_id)
-    caller.get_activity(value)
-    filepath = caller.create_gpx()
+    filepath = caller.create_gpx(value)
     if filepath:
         file = types.InputFile(filepath)
         await bot.send_document(telegram_id, file)
@@ -152,10 +153,43 @@ async def gear_handler(message: types.Message,
     telegram_id, lang, user_name = unpack_message(message)
     value = regexp_command['value']
     caller = APICaller(telegram_id)
-    raw_data = caller.get_gear(value)
+    raw_data = caller.raw_data(get_gear=value)
+    caller.disconnect()
     if raw_data:
         data = formatter.format_gear(raw_data, lang)
         await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
+    else:
+        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['NO_GEAR'])
+
+
+@dp.message_handler(commands=["notify"])
+async def notify_handler(message: types.Message):
+    """Handles the /notify command. Returns the status of current notifications
+    subscription status."""
+    telegram_id, lang, user_name = unpack_message(message)
+    notify_session = DataBase(telegram_id)
+    notify_status = notify_session.notify(switch=True)
+    notify_session.disconnect()
+    if notify_status:
+        await bot.send_message(
+            telegram_id, BOT_TEMPLATES[lang]['NOTIFY_TRUE'],
+            parse_mode='MarkdownV2')
+    else:
+        await bot.send_message(
+            telegram_id, BOT_TEMPLATES[lang]['NOTIFY_FALSE'],
+            parse_mode='MarkdownV2')
+
+
+@dp.message_handler(commands=["changelang"])
+async def changelang_handler(message: types.Message):
+    """Handles the /changelang command. Changes the current language in the
+    database for webhooks."""
+    telegram_id, lang, user_name = unpack_message(message)
+    changelang_session = DataBase(telegram_id)
+    current_lang = changelang_session.change_lang()
+    await bot.send_message(
+            telegram_id, BOT_TEMPLATES[lang]['WHLANG'].format(current_lang),
+            parse_mode='MarkdownV2')
 
 
 @dp.message_handler(commands=["find"])
@@ -193,6 +227,7 @@ async def find_finish(message: types.Message, state: FSMContext):
     if 0 < before - after < (120 * 24 * 60 * 60):
         caller = APICaller(telegram_id=telegram_id)
         raw_data = caller.get_activities(before=before, after=after)
+        caller.disconnect()
         await state.finish()
         if not raw_data:
             await bot.send_message(
@@ -203,6 +238,10 @@ async def find_finish(message: types.Message, state: FSMContext):
                                    parse_mode='MarkdownV2')
     else:
         await message.reply(BOT_TEMPLATES[lang]['WRONG_PERIOD'])
+
+
+async def send_update(telegram_id, message):
+    await bot.send_message(telegram_id, message)
 
 
 # Administration commands.
@@ -226,8 +265,8 @@ async def logs_handler(message: types.Message):
     """Returns txt log file. Only available for admin user."""
     telegram_id, lang, user_name = unpack_message(message)
     if telegram_id == ADMIN:
-        file = types.InputFile(LOG_FILE)
-        await bot.send_document(telegram_id, file)
+        log_file = types.InputFile(get_log_file())
+        await bot.send_document(telegram_id, log_file)
 
 
 @dp.message_handler(regexp_commands=[r'/webhook?(?P<action>\w+)'])
@@ -274,12 +313,11 @@ def unpack_message(message: dict) -> tuple:
     lang = message.from_user.language_code
     lang = lang if lang == 'ru' else 'en'
     user_name = message.from_user.first_name
-    logger.debug(LOG_TEMPLATES['MESSAGE_FROM_USER'].format(
+    logger.debug(BOT_TEMPLATES['log_entry'].format(
         telegram_id, message.text))
     return telegram_id, lang, user_name
 
 
 if __name__ == "__main__":
-    server_process = Process(target=run_server)
-    server_process.start()
+    # subprocess.Popen(['python', 'flask_server.py'])
     executor.start_polling(dp)

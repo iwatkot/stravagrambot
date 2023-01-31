@@ -1,6 +1,7 @@
 import os
 import json
 from inspect import stack
+from enum import Enum
 
 from re import escape
 from datetime import timedelta, datetime
@@ -10,41 +11,47 @@ absolute_path = os.path.dirname(__file__)
 logger = Logger(__name__)
 
 
-def get_template(filename: str):
+class Urls(Enum):
+    ACTIVITY = "https://www\\.strava\\.com/activities/{}"
+    PROFILE = "https://www.strava.com/athletes/"
+    SEGMENT = "https://www\\.strava\\.com/segments/{}"
+
+
+def get_template(filename: str) -> dict:
     """Returns data from the specified JSON file."""
     filepath = os.path.join(absolute_path, 'templates/{}.json'.format(
         filename))
     return json.load(open(filepath, encoding='utf-8'))
 
 
-def get_content(filename: str, lang: str):
+def get_content(filename: str, lang: str) -> list:
     """Returns data from the specified TXT file with chosen language."""
     filepath = os.path.join(absolute_path, 'content{}_{}.txt'.format(
         filename, lang))
     return open(filepath, encoding='utf-8').readlines()
 
 
-FORMATTER_URLS = get_template('url_templates')['formatter']
 FORMATTER_TEMPLATES = get_template('formatter_templates')
 LOG_TEMPLATES = get_template('log_templates')['format_handler']
 
 
-def format_stats(raw_data: dict, period: str, lang: str):
+def format_stats(raw_data: dict, period: str, lang: str) -> str:
     """Formats stats raw data with specific template
     and returns escaped message, ready for MD2 markup."""
     logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
         stack()[0][3], lang))
 
-    useful_data = FORMATTER_TEMPLATES[lang]['stats']['periods'][period]
+    header_templates = FORMATTER_TEMPLATES[lang]['stats']['periods'][period]
     divider = None
     if period == 'week':
         # Finding number of the current week.
         divider = datetime.date(datetime.now()).isocalendar().week
 
     data = []
-    for k, v in useful_data.items():
+    for k, v in header_templates.items():
         raw_section = raw_data.get(k)
         if raw_section.get('count'):
+            # Preparing dict for formatting with template.
             raw_section['header'] = v
             raw_section['average_speed'] = round(raw_section.get(
                 'distance') / raw_section.get('moving_time'), 2)
@@ -53,50 +60,48 @@ def format_stats(raw_data: dict, period: str, lang: str):
             insert_idle(raw_section)
             if divider:
                 divide_stats(raw_section, divider)
-            value_formatter(raw_section, modify=True)
+            # Converting values in the dict.
+            value_formatter(raw_section)
             data.append(raw_section)
-
+    # Generating result message with template.
     message = ''
     for section in data:
         message += use_format_template(section, lang, 'stats')
     return message
 
 
-def format_activities(raw_data: list, lang: str):
+def format_activities(data: list, lang: str) -> str:
     """Formats list of activities raw data with specific template
     and returns escaped message, ready for MD2 markup."""
     logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
         stack()[0][3], lang))
     # Formatting each dict in the list.
-    for raw_section in raw_data:
-        locale_type(raw_section, lang)
-        value_formatter(raw_section, modify=True)
+    for section in data:
+        locale_type(section, lang)
+        value_formatter(section)
     # Generating result message with template.
     message = ''
-    for section in raw_data:
+    for section in data:
         message += use_format_template(section, lang, 'activities')
     return message
 
 
-def format_activity(raw_data: dict, lang: str):
+def format_activity(data: dict, lang: str) -> str:
     """Formats activity raw data with specific template
     and returns escaped message, ready for MD2 markup."""
     logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
         stack()[0][3], lang))
-
-    USEFUL_DATA = FORMATTER_TEMPLATES['useful_data']['activity']
-    data = {k: raw_data.get(k) for k in USEFUL_DATA if raw_data.get(k)}
-    # Preparing data dict for formatting.
     locale_type(data, lang)
     insert_idle(data)
     insert_pace(data)
+    # Preparing dict for formatting with template.
     data['gear_nickname'] = data.get('gear').get('nickname')
     data['gear_id'] = data.get('gear').get('id')
     segment_data = data.get('segment_efforts')
     # Formatting values in the data dict.
-    value_formatter(data, modify=True)
+    value_formatter(data)
     # Adding keys with new data.
-    data['url'] = FORMATTER_URLS['activity_url'] + str(data.get('id'))
+    data['url'] = Urls.ACTIVITY.value.format(data.get('id'))
     data['download'] = data.get('id')
     # Generating result message with template.
     message = use_format_template(
@@ -104,42 +109,35 @@ def format_activity(raw_data: dict, lang: str):
     return message
 
 
-def format_segment(raw_data: dict, lang: str):
+def format_segment(data: dict, lang: str) -> str:
     """Formats segment raw data with specific template
     and returns escaped message, ready for MD2 markup."""
     logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
         stack()[0][3], lang))
-
-    USEFUL_DATA = FORMATTER_TEMPLATES['useful_data']['segment']
-    data = {k: raw_data.get(k) for k in USEFUL_DATA if raw_data.get(k)}
-    # Preparing data dict for formatting.
+    # Preparing dict for formatting with template.
     data['type'] = data['activity_type']
     locale_type(data, lang)
     insert_segment_data(data)
     # Formatting values in the data dict.
-    value_formatter(data, modify=True)
-    data['url'] = FORMATTER_URLS['segment_url'] + str(data.get('id'))
+    value_formatter(data)
+    data['url'] = Urls.SEGMENT.value.format(data.get('id'))
     # Generating result message with template.
     message = use_format_template(data, lang, 'segment')
     return message
 
 
-def format_starred_segments(raw_data: list, lang: str):
+def format_starred_segments(data: list, lang: str) -> str:
     """Formats starred segments raw data with specific template
     and returns escaped message, ready for MD2 markup."""
-    USEFUL_DATA = FORMATTER_TEMPLATES['useful_data']['starred_segments']
     logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
         stack()[0][3], lang))
     # Formatting each dict in the list.
-    data = []
-    for raw_section in raw_data:
+    for section in data:
         # Preparing data dict for formatting.
-        section = {k: raw_section.get(k) for k in USEFUL_DATA}
         section['type'] = section['activity_type']
         locale_type(section, lang)
         # Formatting values in the data dict.
-        value_formatter(section, modify=True)
-        data.append(section)
+        value_formatter(section)
     # Generating result message with template.
     message = ''
     for section in data:
@@ -147,21 +145,19 @@ def format_starred_segments(raw_data: list, lang: str):
     return message
 
 
-def format_gear(raw_data: dict, lang: str):
+def format_gear(raw_data: dict, lang: str) -> str:
     """Formats gear raw data with specific template
     and returns escaped message, ready for MD2 markup."""
-    value_formatter(raw_data, modify=True)
+    value_formatter(raw_data)
     message = use_format_template(raw_data, lang, 'gear')
     return message
 
 
-def value_formatter(data: dict, modify: bool):
+def value_formatter(data: dict) -> None:
     """Modifies the values in the dictonary with specific rules.
     Speed(m/s) to km/h. Time(s) to timedelta. Distance(m) to km.
     Zone aware datetime string to a local datetime string.
     Other values will be filled fith escape symbolds for MD2."""
-    if not modify:
-        data = data.copy()
     for key, value in data.items():
         if key in FORMATTER_TEMPLATES['convert_keys']['time']:
             data[key] = str(timedelta(seconds=value))
@@ -174,10 +170,9 @@ def value_formatter(data: dict, modify: bool):
             data[key] = escape(datetime.strftime(time, '%Y-%m-%d %H:%M'))
         else:
             data[key] = escape(str(value).strip())
-    return data
 
 
-def insert_idle(data: dict):
+def insert_idle(data: dict) -> None:
     """Iserting idle time and idle percent values into the dict."""
     idle_time = data.get('elapsed_time') - data.get('moving_time')
     idle_percent = round((idle_time / data.get('elapsed_time')) * 100, 2)
@@ -185,20 +180,20 @@ def insert_idle(data: dict):
     data['idle_percent'] = idle_percent
 
 
-def pace_formatter(speed: int):
+def pace_formatter(speed: int) -> str:
     """Converts speed in m/s to pace format (time for 1 km)."""
     pace = datetime.strptime((
         str(timedelta(seconds=(round(1000 / speed))))), '%H:%M:%S')
     return escape(datetime.strftime(pace, '%M:%S'))
 
 
-def insert_pace(data: dict):
+def insert_pace(data: dict) -> None:
     """Inserting average and maximum pace values into the dict."""
     data['average_pace'] = pace_formatter(data.get('average_speed'))
     data['max_pace'] = pace_formatter(data.get('max_speed'))
 
 
-def insert_segment_data(data: dict):
+def insert_segment_data(data: dict) -> None:
     """Inserting segment data into the dict."""
     xom_data = data.get('xoms')
     athlete_data = data.get('athlete_segment_stats')
@@ -216,7 +211,7 @@ def insert_segment_data(data: dict):
         data['ll_efforts'] = local_legend.get('effort_count')
 
 
-def locale_type(data: dict, lang: str):
+def locale_type(data: dict, lang: str) -> None:
     """Locales the type key in activity dictionary."""
     if lang != 'en':
         localed_activity = FORMATTER_TEMPLATES[lang]['types'].get(
@@ -225,7 +220,8 @@ def locale_type(data: dict, lang: str):
             data['type'] = localed_activity
 
 
-def use_format_template(data: dict, lang: str, type: str, segment_data=None):
+def use_format_template(data: dict, lang: str,
+                        type: str, segment_data: dict = None) -> str:
     """Formats data dictionary with specified template."""
     format_template = FORMATTER_TEMPLATES[lang][type]
     message = ''
@@ -242,7 +238,7 @@ def use_format_template(data: dict, lang: str, type: str, segment_data=None):
     return message
 
 
-def divide_stats(data: dict, divider: int):
+def divide_stats(data: dict, divider: int) -> None:
     """Divides specific stat values with divide value."""
     for k, v in data.items():
         if k in FORMATTER_TEMPLATES['convert_keys']['time']:
@@ -251,11 +247,10 @@ def divide_stats(data: dict, divider: int):
             data[k] = round((v) / divider, 2)
 
 
-def format_users(users: list):
+def format_users(users: list) -> str:
     """Formatting list of strava ids from the database to MD2 with links."""
-    message = '`List of users in the database:`\n\n'
+    message = FORMATTER_TEMPLATES['users_template'].format(len(users))
     for user in users:
         id = user[0]
-        message += '[{}]({}{}) '.format(
-            id, FORMATTER_URLS['user_profile_url'], id)
+        message += '[{}]({}{}) '.format(id, Urls.PROFILE.value, id)
     return message

@@ -1,8 +1,4 @@
 {
-    "oauth": {
-        "oauth_marker": "/stravagramoauth",
-        "webhooks_marker": "/webhooks/"
-    },
     "locale": {
         "en": {
             "index_page_title": "Your Strava activities in Telegram",
