@@ -44,5 +44,9 @@
     },
     "format_handler": {
         "FUNCTION_INIT": "Launched function [{}] for language [{}]."
+    },
+    "bot": {
+        "LOG_MESSAGE": "The telegram user with ID [{}] send bot the message: [{}].",
+        "LOG_CALLBACK": "The telegram user with ID [{}] send bot the callback: [{}]."
     }
 }

@@ -1,8 +1,8 @@
 {
     "en": {
-        "/start": "Hello, {}\\! You can use this bot to access your Strava data\\.\nTo start using the both please authorize it in Strava with /auth command\\.\n*Powered by Strava*\\.",
+        "START": "Hello, {}\\! You can use this bot to access your Strava data\\.\nTo start using the both please authorize it in Strava with /auth command\\.\n*Powered by Strava*\\.",
         "TOUR": "The bot is in active development now, you can face some errors, while using the bot\\. You can also check out the [changelog](http://stravagram.space/changelog) to learn about about new features\\.",
-        "/auth": "Click on the button and proceed to the Strava web site\\.\n\n_Please check all the boxes on the auth pages, otherwise the bot will not work proreply\\._",
+        "AUTH": "Click on the button and proceed to the Strava web site\\.\n\n_Please check all the boxes on the auth pages, otherwise the bot will not work proreply\\._",
         "NOT_FOUND_IN_DB": "The bot didn't find your Telegram ID in the database. Please authorize the bot again with the /auth command.",
         "ERROR_WHILE_REFRESHING": "The bot can't update your Strava access token due to bad response from Stava API.\nUsually it happens when you revoke the access to the bot. Please authorize the bot one more time with the /auth command.",
         "FIND_INIT": "Send the time period to search your activities\\. It should be formatted like this:\n\n `YYYY\\-MM\\-DD YYYY\\-MM\\-DD`\n\nFirst date \\- start date to search activites, and the second one is the end of the time period\\.\nSelected time period should be less than *120 days*\\.\nYou can use /cancel command to stop the operation\\.",
@@ -14,17 +14,24 @@
         "NO_SEGMENT": "The bot can't find the specified segment.",
         "NO_ACTIVITY": "The bot can't find the specified activity.",
         "NO_STARRED_SEG": "The bot can't find any starred segments in your Strava account.",
+        "STARRED_SEG": "Here's the list of your starred segments.",
         "NO_GEAR": "The bot can't find the specified gear.",
         "RECENT": "Here's your recent activities\\.",
         "GPX": "Download GPX file",
         "ACTSEG": "List of segments",
         "NO_SEGMENTS": "There're no segments in this activity.",
-        "SEGMENTS": "Here's the list of segments in the activity."
+        "SEGMENTS": "Here's the list of segments in the activity.",
+        "WH_SUB_GOOD": "Successfully subscribed to Webhooks with id: [{}].",
+        "WH_SUB_BAD": "There was an error while trying to subscribe to the webhooks, check the logs with /logs command.",
+        "WH_VIEW_GOOD": "There's an active webhook subscription with ID: [{}].",
+        "WH_VIEW_BAD": "There's no active webhook subscription.",
+        "WH_DEL_GOOD": "Successfully deleted webhook subscription.",
+        "WH_DEL_BAD": "There was an error while trying to delete subscription to the webhooks, check the logs with /logs command."
     },
     "ru": {
-        "/start": "Здравствуй, {}\\! С помощью этого бота ты можешь получить доступ к своим тренировкам на Strava\\.\nЧтобы начать пользоваться ботом, используй команду /auth\\.\n*Powered by Strava*\\.",
+        "START": "Здравствуй, {}\\! С помощью этого бота ты можешь получить доступ к своим тренировкам на Strava\\.\nЧтобы начать пользоваться ботом, используй команду /auth\\.\n*Powered by Strava*\\.",
         "TOUR": "Бот находится в стадии активной разработки, будьте готовы столкнуться с различными ошибками\\. Чтобы узнать о новых функциях, посмотрите страницу [обновления](http://stravagram.space/changelog) на сайте бота\\.",
-        "/auth": "Нажмите на кнопку и перейдите на сайт Strava\\.\n\n_Пожалуйста отметьте все пункты доступа на странице авторизации, или бот не сможешь корректно работать\\._",
+        "AUTH": "Нажмите на кнопку и перейдите на сайт Strava\\.\n\n_Пожалуйста отметьте все пункты доступа на странице авторизации, или бот не сможешь корректно работать\\._",
         "NOT_FOUND_IN_DB": "Бот не смог найти ваш Telegram ID в базе данных. Авторизуйте бота заново с помощью команды /auth.",
         "ERROR_WHILE_REFRESHING": "Бот не смог обновить ваш уникальный токен для доступа к Strava.\nСкорее всего вы деавторизовали бота в вашей учетной записи Strava. Авторизуйте бота заново с помощью команды /auth.",
         "FIND_INIT": "Чтобы найти ваши тренировки, пришлите мне диапазон дат для поиска\\. Сообщение должно быть отформатировано так:\n\n `YYYY\\-MM\\-DD YYYY\\-MM\\-DD`\n\nГде первая дата \\- это начало диапазона для поиска тренировок, а вторая \\- его конец\\.\nВыбранный период времени должен быть меньше *120 дней*\\.\nВы можете воспользоваться командой /cancel, чтобы отменить операцию\\.",
@@ -35,15 +42,14 @@
         "NO_STATS": "В вашем аккаунте Strava нет подходящих тренировок.",
         "NO_SEGMENT": "Бот не смог найти указанный сегмент.",
         "NO_ACTIVITY": "Бот не смог найти указанную тренировку.",
+        "STARRED_SEG": "Вот список ваших избранных участков.",
         "NO_STARRED_SEG": "Бот не смог найти избранных участков в вашем аккаунте Strava.",
         "NO_GEAR": "Бот не смог найти указанную экипировку.",
         "RECENT": "Here's your recent activities\\.",
         "GPX": "Скачать GPX файл",
         "ACTSEG": "Список участков",
         "NO_SEGMENTS": "В этой тренировке нет участков.",
-        "SEGMENTS": "Список участков из тренировки."
-    },
-    "admin": {
+        "SEGMENTS": "Список участков из тренировки.",
         "WH_SUB_GOOD": "Successfully subscribed to Webhooks with id: [{}].",
         "WH_SUB_BAD": "There was an error while trying to subscribe to the webhooks, check the logs with /logs command.",
         "WH_VIEW_GOOD": "There's an active webhook subscription with ID: [{}].",
@@ -51,14 +57,6 @@
         "WH_DEL_GOOD": "Successfully deleted webhook subscription.",
         "WH_DEL_BAD": "There was an error while trying to delete subscription to the webhooks, check the logs with /logs command."
     },
-    "constants": {
-        "periods": {
-            "/statsall": "all",
-            "/statsyear": "year",
-            "/weekavg": "week"
-        }
-    },
     "LOG_MESSAGE": "The telegram user with ID [{}] send bot the message: [{}].",
-    "LOG_CALLBACK": "The telegram user with ID [{}] send bot the callback: [{}].",
-    "oauth_url": "http://www.strava.com/oauth/authorize?client_id=13782&response_type=code&redirect_uri=http://stravagram.space/stravagramoauth?telegram_id={}&exchange_token&approval_prompt=force&scope=read_all,activity:read_all"
+    "LOG_CALLBACK": "The telegram user with ID [{}] send bot the callback: [{}]."
 }

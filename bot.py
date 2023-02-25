@@ -1,5 +1,7 @@
 import asyncio
 import re
+import json
+import os
 
 from multiprocessing import Process
 from aiogram import Bot, Dispatcher, executor, types
@@ -9,20 +11,23 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from decouple import config
 from datetime import datetime
+from pydantic import BaseModel
 
 import format_handler as formatter
 
 from webhook_handler import WebHook
 from database_handler import DatabaseSession
 from flask_server import run_server
-from format_handler import get_template
-from templates_handler import startup
+from templates_handler import startup, Constants, Urls
 from api_handler import APICaller
-from log_handler import Logger, get_log_file
+from log_handler import Logger, get_log_file, LogTemplates
 
 logger = Logger('bot')
 TOKEN = config('TOKEN')
-BOT_TEMPLATES = get_template('bot_templates')
+BOT_TEMPLATES = os.path.join(Constants.ABSOLUTE_PATH.value,
+                             "templates/bot_templates.json")
+BUTTON_TEMPLATES = os.path.join(Constants.ABSOLUTE_PATH.value,
+                                "templates/buttons.json")
 ADMIN = int(config('ADMIN'))
 
 storage = MemoryStorage()
@@ -34,14 +39,91 @@ class Form(StatesGroup):
     find = State()
 
 
+class MessageModel(BaseModel):
+    START: str
+    TOUR: str
+    AUTH: str
+    NOT_FOUND_IN_DB: str
+    ERROR_WHILE_REFRESHING: str
+    FIND_INIT: str
+    CANCELLED: str
+    WRONG_PERIOD: str
+    BAD_GPX_REQUEST: str
+    NO_ACTIVITIES: str
+    NO_STATS: str
+    NO_SEGMENT: str
+    NO_ACTIVITY: str
+    STARRED_SEG: str
+    NO_STARRED_SEG: str
+    RECENT: str
+    GPX: str
+    ACTSEG: str
+    NO_SEGMENTS: str
+    SEGMENTS: str
+    WH_SUB_GOOD: str
+    WH_SUB_BAD: str
+    WH_VIEW_GOOD: str
+    WH_VIEW_BAD: str
+    WH_DEL_GOOD: str
+    WH_DEL_BAD: str
+
+
+class ButtonModel(BaseModel):
+    MAIN_MENU: str
+    PROFILE: str
+    STATS: str
+    ACTIVITIES: str
+    AUTH: str
+    STARRED_SEGMENTS: str
+    STATS_ALL: str
+    STATS_YEAR: str
+    WEEKAVG: str
+    RECENT: str
+    LAST: str
+    FIND: str
+    CANCEL: str
+
+    def main_menu(self):
+        return [self.PROFILE, self.STATS, self.ACTIVITIES]
+
+    def profile_menu(self):
+        return [self.AUTH, self.STARRED_SEGMENTS, self.MAIN_MENU]
+
+    def stats_menu(self):
+        return [self.STATS_ALL, self.STATS_YEAR, self.WEEKAVG, self.MAIN_MENU]
+
+    def activities_menu(self):
+        return [self.RECENT, self.LAST, self.FIND, self.MAIN_MENU]
+
+
+class LocaleMModel(BaseModel):
+    ru: MessageModel
+    en: MessageModel
+
+
+class LocaleBModel(BaseModel):
+    ru: ButtonModel
+    en: ButtonModel
+
+
+message_data = json.load(open(BOT_TEMPLATES, "r", encoding="utf-8"))
+button_data = json.load(open(BUTTON_TEMPLATES, "r", encoding="utf-8"))
+message_model = LocaleMModel(ru=MessageModel(**message_data["ru"]),
+                             en=MessageModel(**message_data["en"]))
+button_model = LocaleBModel(ru=ButtonModel(**button_data["ru"]),
+                            en=ButtonModel(**button_data["en"]))
+BOT_MESSAGES = message_model.__dict__
+BUTTONS = button_model.__dict__
+
+
 @dp.message_handler(commands=["start"])
 async def start_handler(message: types.Message):
     """Handles the /start command."""
     telegram_id, lang, user_name = unpack_message(message)
-    await message.reply(BOT_TEMPLATES[lang][message.text].format(user_name),
+    await message.reply(BOT_MESSAGES[lang].START.format(user_name),
                         parse_mode='MarkdownV2')
     await asyncio.sleep(3)
-    await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['TOUR'],
+    await bot.send_message(telegram_id, BOT_MESSAGES[lang].TOUR,
                            parse_mode='MarkdownV2')
 
 
@@ -53,10 +135,10 @@ async def auth_handler(message: types.Message):
     inline_keyboard = InlineKeyboardMarkup(resize_keyboard=True)
     inline_button = InlineKeyboardButton(
         text='Connect with Strava',
-        url=BOT_TEMPLATES['oauth_url'].format(telegram_id))
+        url=Urls.OAUTH_URL.value.format(telegram_id))
     inline_keyboard.add(inline_button)
 
-    await bot.send_message(telegram_id, BOT_TEMPLATES[lang][message.text],
+    await bot.send_message(telegram_id, BOT_MESSAGES[lang].AUTH,
                            parse_mode='MarkdownV2',
                            reply_markup=inline_keyboard)
 
@@ -69,12 +151,12 @@ async def recent_handler(message: types.Message):
     raw_data = caller.get_activities()
     if raw_data:
         data = formatter.format_activities(raw_data, lang)
-        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['RECENT'],
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].RECENT,
                                reply_markup=generate_inline_keyboard(data),
                                parse_mode='MarkdownV2')
     else:
         await bot.send_message(
-            telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITIES'])
+            telegram_id, BOT_MESSAGES[lang].NO_ACTIVITIES)
 
 
 @dp.message_handler(commands=["starredsegments"])
@@ -82,13 +164,20 @@ async def starred_segments_handler(message: types.Message):
     """Handles the /starredsegments command."""
     telegram_id, lang, user_name = unpack_message(message)
     caller = APICaller(telegram_id)
-    raw_data = caller.raw_data(get_starred_segments=True)
-    if raw_data:
-        data = formatter.format_starred_segments(raw_data, lang)
-        await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
-    else:
+    segments = caller.raw_data(get_starred_segments=True)
+    if not segments:
         await bot.send_message(
-            telegram_id, BOT_TEMPLATES[lang]['NO_STARRED_SEG'])
+            telegram_id, BOT_MESSAGES[lang].NO_STARRED_SEG)
+        return
+
+    inline_buttons = {}
+    for segment in segments:
+        inline_buttons.update({
+            f"segment{segment['id']}":
+                f"{segment['name']}"})
+    inline_keyboard = generate_inline_keyboard(inline_buttons)
+    await bot.send_message(telegram_id, BOT_MESSAGES[lang].STARRED_SEG,
+                           reply_markup=inline_keyboard)
 
 
 @dp.message_handler(commands=["statsall", "statsyear", "weekavg"])
@@ -98,14 +187,13 @@ async def stats_handler(message: types.Message):
     telegram_id, lang, user_name = unpack_message(message)
     stats_command = message.get_command()
     caller = APICaller(telegram_id=telegram_id)
-    periods = BOT_TEMPLATES['constants']['periods']
-    period = periods.get(stats_command)
+    period = Constants.PERIODS.value.get(stats_command)
     raw_data = caller.get_stats()
     if raw_data:
         data = formatter.format_stats(raw_data, period, lang)
         await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
     else:
-        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['NO_STATS'])
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_STATS)
 
 
 @dp.message_handler(regexp_commands=[r'/activity?(?P<value>\w+)'])
@@ -120,7 +208,7 @@ async def activity_handler(message: types.Message,
         data = formatter.format_activity(raw_data, lang)
         await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
     else:
-        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITY'])
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITY)
 
 
 @dp.message_handler(regexp_commands=[r'/segment?(?P<value>\w+)'])
@@ -135,7 +223,7 @@ async def segment_handler(message: types.Message,
         data = formatter.format_segment(raw_data, lang)
         await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
     else:
-        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITY'])
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITY)
 
 
 @dp.message_handler(regexp_commands=[r'/download?(?P<value>\w+)'])
@@ -151,22 +239,7 @@ async def download_handler(message: types.Message,
         await bot.send_document(telegram_id, file)
     else:
         await bot.send_message(
-            telegram_id, BOT_TEMPLATES[lang]['BAD_GPX_REQUEST'])
-
-
-@dp.message_handler(regexp_commands=[r'/gear?(?P<value>\w+)'])
-async def gear_handler(message: types.Message,
-                       regexp_command: re.Match[str]):
-    """Handles the /gear<> command to get specified gear."""
-    telegram_id, lang, user_name = unpack_message(message)
-    value = regexp_command['value']
-    caller = APICaller(telegram_id)
-    raw_data = caller.raw_data(get_gear=value)
-    if raw_data:
-        data = formatter.format_gear(raw_data, lang)
-        await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
-    else:
-        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['NO_GEAR'])
+            telegram_id, BOT_MESSAGES[lang].BAD_GPX_REQUEST)
 
 
 @dp.message_handler(commands=["find"])
@@ -175,7 +248,7 @@ async def find_handler(message: types.Message):
     message with dates."""
     telegram_id, lang, user_name = unpack_message(message)
     await message.reply(
-        BOT_TEMPLATES[lang]['FIND_INIT'], parse_mode='MarkdownV2')
+        BOT_MESSAGES[lang].FIND_INIT, parse_mode='MarkdownV2')
     await Form.find.set()
 
 
@@ -187,7 +260,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     if current_state is None:
         return
     await state.finish()
-    await message.reply(BOT_TEMPLATES[lang]['CANCELLED'])
+    await message.reply(BOT_MESSAGES[lang].CANCELLED)
 
 
 @dp.message_handler(state=Form.find)
@@ -199,7 +272,7 @@ async def find_finish(message: types.Message, state: FSMContext):
         after, before = tuple(map(
             lambda x: datetime.strptime(x, "%Y-%m-%d").timestamp(), dates))
     except Exception:
-        await message.reply(BOT_TEMPLATES[lang]['WRONG_PERIOD'])
+        await message.reply(BOT_MESSAGES[lang].WRONG_PERIOD)
         return
     if 0 < before - after < (120 * 24 * 60 * 60):
         caller = APICaller(telegram_id=telegram_id)
@@ -207,14 +280,14 @@ async def find_finish(message: types.Message, state: FSMContext):
         await state.finish()
         if not raw_data:
             await bot.send_message(
-                telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITIES'])
+                telegram_id, BOT_MESSAGES[lang].NO_ACTIVITIES)
         else:
             data = formatter.format_activities(raw_data, lang)
-            await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['RECENT'],
+            await bot.send_message(telegram_id, BOT_MESSAGES[lang].RECENT,
                                    reply_markup=generate_inline_keyboard(data),
                                    parse_mode='MarkdownV2')
     else:
-        await message.reply(BOT_TEMPLATES[lang]['WRONG_PERIOD'])
+        await message.reply(BOT_MESSAGES[lang].WRONG_PERIOD)
 
 
 # Keyboard generators.
@@ -235,8 +308,8 @@ async def activity_callback(callback_query: types.CallbackQuery):
     activity_id = callback_query.data.split('activity')[1]
 
     inline_buttons = {
-        f"gpx{activity_id}": BOT_TEMPLATES[lang]['GPX'],
-        f"actseg{activity_id}": BOT_TEMPLATES[lang]['ACTSEG']}
+        f"gpx{activity_id}": BOT_MESSAGES[lang].GPX,
+        f"actseg{activity_id}": BOT_MESSAGES[lang].ACTSEG}
     inline_keyboard = generate_inline_keyboard(inline_buttons)
 
     caller = APICaller(telegram_id)
@@ -247,7 +320,7 @@ async def activity_callback(callback_query: types.CallbackQuery):
                                reply_markup=inline_keyboard,
                                parse_mode='MarkdownV2')
     else:
-        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITY'])
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITY)
 
 
 @dp.callback_query_handler(text_contains='gpx')
@@ -263,7 +336,7 @@ async def gpx_callback(callback_query: types.CallbackQuery):
         await bot.send_document(telegram_id, file)
     else:
         await bot.send_message(
-            telegram_id, BOT_TEMPLATES[lang]['BAD_GPX_REQUEST'])
+            telegram_id, BOT_MESSAGES[lang].BAD_GPX_REQUEST)
 
 
 @dp.callback_query_handler(text_contains='actseg')
@@ -276,14 +349,15 @@ async def actseg_callback(callback_query: types.CallbackQuery):
 
     segments = raw_data['segment_efforts']
     if not segments:
-        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['NO_SEGMENTS'])
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_SEGMENTS)
         return
     inline_buttons = {}
     for segment in segments:
         inline_buttons.update({
-            f"segment{segment['segment']['id']}": f"{segment['segment']['name']}"})
+            f"segment{segment['segment']['id']}":
+                f"{segment['segment']['name']}"})
     inline_keyboard = generate_inline_keyboard(inline_buttons)
-    await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['SEGMENTS'],
+    await bot.send_message(telegram_id, BOT_MESSAGES[lang].SEGMENTS,
                            reply_markup=inline_keyboard)
 
 
@@ -299,7 +373,8 @@ async def segment_callback(callback_query: types.CallbackQuery):
         data = formatter.format_segment(raw_data, lang)
         await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
     else:
-        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITY'])
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITY)
+
 
 # Administration commands.
 
@@ -340,29 +415,29 @@ async def webhook_handler(message: types.Message,
             result = webhook.subscribe()
             if result:
                 await bot.send_message(
-                    telegram_id, BOT_TEMPLATES['admin']['WH_SUB_GOOD'].format(
+                    telegram_id, BOT_MESSAGES[lang].WH_SUB_GOOD.format(
                         result))
             else:
                 await bot.send_message(
-                    telegram_id, BOT_TEMPLATES['admin']['WH_SUB_BAD'])
+                    telegram_id, BOT_MESSAGES[lang].WH_SUB_BAD)
         elif action == 'view':
             result = webhook.view()
             if result:
                 await bot.send_message(
-                    telegram_id, BOT_TEMPLATES['admin']['WH_VIEW_GOOD'].format(
+                    telegram_id, BOT_MESSAGES[lang].WH_VIEW_GOOD.format(
                         result))
             else:
                 await bot.send_message(
-                    telegram_id, BOT_TEMPLATES['admin']['WH_VIEW_BAD'])
+                    telegram_id, BOT_MESSAGES[lang].WH_VIEW_BAD)
         elif action == 'delete':
             webhook.view()
             result = webhook.delete()
             if result:
                 await bot.send_message(
-                    telegram_id, BOT_TEMPLATES['admin']['WH_DEL_GOOD'])
+                    telegram_id, BOT_MESSAGES[lang].WH_DEL_GOOD)
             else:
                 await bot.send_message(
-                    telegram_id, BOT_TEMPLATES['admin']['WH_DEL_BAD'])
+                    telegram_id, BOT_MESSAGES[lang].WH_DEL_BAD)
 
 
 # Message and callbacks unpackers.
@@ -375,10 +450,10 @@ def unpack_message(message: dict) -> tuple:
     lang = lang if lang == 'ru' else 'en'
     user_name = message.from_user.first_name
     try:
-        logger.debug(BOT_TEMPLATES['LOG_MESSAGE'].format(
+        logger.debug(LogTemplates['bot'].LOG_MESSAGE.format(
             telegram_id, message.text))
     except AttributeError:
-        logger.debug(BOT_TEMPLATES['LOG_CALLBACK'].format(
+        logger.debug(LogTemplates['bot'].LOG_CALLBACK.format(
             telegram_id, message.data))
     return telegram_id, lang, user_name
 

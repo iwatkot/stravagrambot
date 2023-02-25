@@ -65,6 +65,11 @@ class FormatHandlerModel(BaseModel):
     FUNCTION_INIT: str
 
 
+class BotModel(BaseModel):
+    LOG_MESSAGE: str
+    LOG_CALLBACK: str
+
+
 class AllTemplates(BaseModel):
     database_handler: DatabaseHandlerModel
     flask_server: FlaskServerModel
@@ -72,6 +77,7 @@ class AllTemplates(BaseModel):
     webhook_handler: WebhookHandlerModel
     api_handler: ApiHandlerModel
     format_handler: FormatHandlerModel
+    bot: BotModel
 
     def __getitem__(self, key):
         return getattr(self, key)

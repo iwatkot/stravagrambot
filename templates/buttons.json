@@ -1,0 +1,32 @@
+{
+    "en": {
+        "MAIN_MENU": "Main menu",
+        "PROFILE": "Profile",
+        "STATS": "Stats",
+        "ACTIVITIES": "Activities",
+        "AUTH": "Authenticate",
+        "STARRED_SEGMENTS": "Starred segments",
+        "STATS_ALL": "Overall stats",
+        "STATS_YEAR": "This year stats",
+        "WEEKAVG": "Week average stats",
+        "RECENT": "Recent activities",
+        "LAST": "Last activity",
+        "FIND": "Find activities",
+        "CANCEL": "Cancel"
+    },
+    "ru": {
+        "MAIN_MENU": "Main menu",
+        "PROFILE": "Profile",
+        "STATS": "Stats",
+        "ACTIVITIES": "Activities",
+        "AUTH": "Authenticate",
+        "STARRED_SEGMENTS": "Starred segments",
+        "STATS_ALL": "Overall stats",
+        "STATS_YEAR": "This year stats",
+        "WEEKAVG": "Week average stats",
+        "RECENT": "Recent activities",
+        "LAST": "Last activity",
+        "FIND": "Find activities",
+        "CANCEL": "Cancel"
+    }
+}
