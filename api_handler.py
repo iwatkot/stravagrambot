@@ -31,6 +31,7 @@ class APICaller:
         If token expired launches the token exchange procedure
         and updates token in the database."""
         token_session = DatabaseSession(self.telegram_id)
+        self.strava_id = token_session.strava_id
         if token_session.token_expired():
             refresh_token = token_session.get_token()
             token = Token(self.telegram_id, refresh_token=refresh_token)

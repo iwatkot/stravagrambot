@@ -57,6 +57,7 @@ The bot will answer admin commands only if the user's Telegram ID is equal to `A
 
 
 ## Changelog
+**2023/02/25** - Moved from /commands to inline buttons.<br>
 **2023/02/25** - Massive changes in the way templates are stored. Moved to SQLAlchemy from raw SQL requests.<br>
 **2023/01/31** - Massive refactoring of most modules.<br>
 **2023/01/30** - Added average speed and pace for all stats commands.<br>

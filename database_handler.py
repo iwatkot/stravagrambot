@@ -50,6 +50,7 @@ class DatabaseSession:
         if self.exists_in_database():
             self.user = self.session.query(Users).filter(
                 Users.telegram_id == self.telegram_id).one()
+            self.strava_id = self.user.strava_id
 
     def connect(self):
         try:

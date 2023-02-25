@@ -6,6 +6,7 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from decouple import config
 from datetime import datetime
 
@@ -15,6 +16,7 @@ from webhook_handler import WebHook
 from database_handler import DatabaseSession
 from flask_server import run_server
 from format_handler import get_template
+from templates_handler import startup
 from api_handler import APICaller
 from log_handler import Logger, get_log_file
 
@@ -47,9 +49,16 @@ async def start_handler(message: types.Message):
 async def auth_handler(message: types.Message):
     """Handles the /auth command."""
     telegram_id, lang, user_name = unpack_message(message)
-    auth_url = BOT_TEMPLATES['oauth_url'].format(telegram_id)
-    await message.reply(BOT_TEMPLATES[lang][message.text].format(auth_url),
-                        parse_mode='MarkdownV2')
+
+    inline_keyboard = InlineKeyboardMarkup(resize_keyboard=True)
+    inline_button = InlineKeyboardButton(
+        text='Connect with Strava',
+        url=BOT_TEMPLATES['oauth_url'].format(telegram_id))
+    inline_keyboard.add(inline_button)
+
+    await bot.send_message(telegram_id, BOT_TEMPLATES[lang][message.text],
+                           parse_mode='MarkdownV2',
+                           reply_markup=inline_keyboard)
 
 
 @dp.message_handler(commands=["recent"])
@@ -60,7 +69,9 @@ async def recent_handler(message: types.Message):
     raw_data = caller.get_activities()
     if raw_data:
         data = formatter.format_activities(raw_data, lang)
-        await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
+        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['RECENT'],
+                               reply_markup=generate_inline_keyboard(data),
+                               parse_mode='MarkdownV2')
     else:
         await bot.send_message(
             telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITIES'])
@@ -199,11 +210,96 @@ async def find_finish(message: types.Message, state: FSMContext):
                 telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITIES'])
         else:
             data = formatter.format_activities(raw_data, lang)
-            await bot.send_message(telegram_id, data,
+            await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['RECENT'],
+                                   reply_markup=generate_inline_keyboard(data),
                                    parse_mode='MarkdownV2')
     else:
         await message.reply(BOT_TEMPLATES[lang]['WRONG_PERIOD'])
 
+
+# Keyboard generators.
+
+def generate_inline_keyboard(inline_buttons: dict):
+    inline_keyboard = InlineKeyboardMarkup(resize_keyboard=True)
+    for key, value in inline_buttons.items():
+        inline_button = InlineKeyboardButton(text=value, callback_data=key)
+        inline_keyboard.add(inline_button)
+    return inline_keyboard
+
+
+# Callback handlers.
+
+@dp.callback_query_handler(text_contains='activity')
+async def activity_callback(callback_query: types.CallbackQuery):
+    telegram_id, lang, user_name = unpack_message(callback_query)
+    activity_id = callback_query.data.split('activity')[1]
+
+    inline_buttons = {
+        f"gpx{activity_id}": BOT_TEMPLATES[lang]['GPX'],
+        f"actseg{activity_id}": BOT_TEMPLATES[lang]['ACTSEG']}
+    inline_keyboard = generate_inline_keyboard(inline_buttons)
+
+    caller = APICaller(telegram_id)
+    raw_data = caller.raw_data(get_activity=activity_id)
+    if raw_data:
+        data = formatter.format_activity(raw_data, lang)
+        await bot.send_message(telegram_id, data,
+                               reply_markup=inline_keyboard,
+                               parse_mode='MarkdownV2')
+    else:
+        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITY'])
+
+
+@dp.callback_query_handler(text_contains='gpx')
+async def gpx_callback(callback_query: types.CallbackQuery):
+    telegram_id, lang, user_name = unpack_message(callback_query)
+    activity_id = callback_query.data.split('gpx')[1]
+
+    caller = APICaller(telegram_id)
+    filepath = caller.create_gpx(activity_id)
+
+    if filepath:
+        file = types.InputFile(filepath)
+        await bot.send_document(telegram_id, file)
+    else:
+        await bot.send_message(
+            telegram_id, BOT_TEMPLATES[lang]['BAD_GPX_REQUEST'])
+
+
+@dp.callback_query_handler(text_contains='actseg')
+async def actseg_callback(callback_query: types.CallbackQuery):
+    telegram_id, lang, user_name = unpack_message(callback_query)
+    activity_id = callback_query.data.split('actseg')[1]
+
+    caller = APICaller(telegram_id)
+    raw_data = caller.raw_data(get_activity=activity_id)
+
+    segments = raw_data['segment_efforts']
+    if not segments:
+        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['NO_SEGMENTS'])
+        return
+    inline_buttons = {}
+    for segment in segments:
+        inline_buttons.update({
+            f"segment{segment['segment']['id']}": f"{segment['segment']['name']}"})
+    inline_keyboard = generate_inline_keyboard(inline_buttons)
+    await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['SEGMENTS'],
+                           reply_markup=inline_keyboard)
+
+
+@dp.callback_query_handler(text_contains='segment')
+async def segment_callback(callback_query: types.CallbackQuery):
+    telegram_id, lang, user_name = unpack_message(callback_query)
+    segment_id = callback_query.data.split('segment')[1]
+
+    caller = APICaller(telegram_id)
+    raw_data = caller.raw_data(get_segment=segment_id)
+
+    if raw_data:
+        data = formatter.format_segment(raw_data, lang)
+        await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
+    else:
+        await bot.send_message(telegram_id, BOT_TEMPLATES[lang]['NO_ACTIVITY'])
 
 # Administration commands.
 
@@ -269,18 +365,26 @@ async def webhook_handler(message: types.Message,
                     telegram_id, BOT_TEMPLATES['admin']['WH_DEL_BAD'])
 
 
+# Message and callbacks unpackers.
+
+
 def unpack_message(message: dict) -> tuple:
     """Extracting data from message (telegram_id, lang and user_name."""
     telegram_id = message.from_user.id
     lang = message.from_user.language_code
     lang = lang if lang == 'ru' else 'en'
     user_name = message.from_user.first_name
-    logger.debug(BOT_TEMPLATES['log_entry'].format(
-        telegram_id, message.text))
+    try:
+        logger.debug(BOT_TEMPLATES['LOG_MESSAGE'].format(
+            telegram_id, message.text))
+    except AttributeError:
+        logger.debug(BOT_TEMPLATES['LOG_CALLBACK'].format(
+            telegram_id, message.data))
     return telegram_id, lang, user_name
 
 
 if __name__ == "__main__":
+    startup()
     server_process = Process(target=run_server)
     server_process.start()
     executor.start_polling(dp)

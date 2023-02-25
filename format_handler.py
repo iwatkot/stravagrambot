@@ -1,11 +1,14 @@
 import os
 import json
+import requests
 from inspect import stack
+from collections import defaultdict
 from enum import Enum
 
 from re import escape
 from datetime import timedelta, datetime
 from log_handler import Logger, LogTemplates
+from templates_handler import Constants
 
 absolute_path = os.path.dirname(__file__)
 logger = Logger(__name__)
@@ -23,15 +26,15 @@ class Urls(Enum):
 
 def get_template(filename: str) -> dict:
     """Returns data from the specified JSON file."""
-    filepath = os.path.join(absolute_path, 'templates/{}.json'.format(
-        filename))
+    filepath = os.path.join(Constants.ABSOLUTE_PATH.value,
+                            'templates/{}.json'.format(filename))
     return json.load(open(filepath, encoding='utf-8'))
 
 
 def get_content(filename: str, lang: str) -> list:
     """Returns data from the specified TXT file with chosen language."""
-    filepath = os.path.join(absolute_path, 'content{}_{}.txt'.format(
-        filename, lang))
+    filepath = os.path.join(Constants.ABSOLUTE_PATH.value,
+                            'content{}_{}.txt'.format(filename, lang))
     return open(filepath, encoding='utf-8').readlines()
 
 
@@ -83,10 +86,24 @@ def format_activities(data: list, lang: str) -> str:
         locale_type(section, lang)
         value_formatter(section)
     # Generating result message with template.
-    message = ''
+    activities = defaultdict(list)
     for section in data:
-        message += use_format_template(section, lang, 'activities')
-    return message
+        activities[f"activity{section['id']}"] = use_format_template(
+            section, lang, 'activities').replace('\\', '')
+    return activities
+
+
+def get_activity_photo(data):
+    try:
+        image_url = data['photos']['primary']['urls']['600']
+    except KeyError:
+        return
+    image_filename = os.path.basename(image_url)
+    image_filepath = os.path.join(Constants.ABSOLUTE_PATH.value,
+                                  'images', image_filename)
+    with open(image_filepath, 'wb') as f:
+        f.write(requests.get(image_url).content)
+    return image_filepath
 
 
 def format_activity(data: dict, lang: str) -> str:
@@ -168,7 +185,7 @@ def value_formatter(data: dict) -> None:
     Other values will be filled fith escape symbolds for MD2."""
     for key, value in data.items():
         if key in FORMATTER_TEMPLATES['convert_keys']['time']:
-            data[key] = str(timedelta(seconds=value))
+            data[key] = escape(str(timedelta(seconds=value)))
         elif key in FORMATTER_TEMPLATES['convert_keys']['distance']:
             data[key] = escape(str(round(value / 1000, 2)))
         elif key in FORMATTER_TEMPLATES['convert_keys']['speed']:
@@ -235,13 +252,6 @@ def use_format_template(data: dict, lang: str,
     for key in format_template:
         if data.get(key):
             message += format_template[key].format(data[key])
-    if segment_data:
-        message += format_template['segment_data']['segment_list']
-        for segment in segment_data:
-            segment_name = segment['segment'].get('name')
-            segment_id = segment['segment'].get('id')
-            message += format_template['segment_data']['segment'].format(
-                segment_name, segment_id)
     return message
 
 

@@ -21,7 +21,7 @@ class Urls(Enum):
 
 class Constants(Enum):
     ABSOLUTE_PATH = os.path.dirname(__file__)
-    DIRS = ['logs', 'gpx']
+    DIRS = ['logs', 'gpx', 'images']
     SUPPORTED_LANGUAGES = ["en", "ru"]
 
 
