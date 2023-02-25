@@ -5,7 +5,7 @@ from enum import Enum
 
 from re import escape
 from datetime import timedelta, datetime
-from log_handler import Logger
+from log_handler import Logger, LogTemplates
 
 absolute_path = os.path.dirname(__file__)
 logger = Logger(__name__)
@@ -15,6 +15,10 @@ class Urls(Enum):
     ACTIVITY = "https://www\\.strava\\.com/activities/{}"
     PROFILE = "https://www.strava.com/athletes/"
     SEGMENT = "https://www\\.strava\\.com/segments/{}"
+    STRAVA_API = "https://www.strava.com/api/v3/oauth/token"
+
+    def __str__(self):
+        return f"{self.value}"
 
 
 def get_template(filename: str) -> dict:
@@ -32,13 +36,12 @@ def get_content(filename: str, lang: str) -> list:
 
 
 FORMATTER_TEMPLATES = get_template('formatter_templates')
-LOG_TEMPLATES = get_template('log_templates')['format_handler']
 
 
 def format_stats(raw_data: dict, period: str, lang: str) -> str:
     """Formats stats raw data with specific template
     and returns escaped message, ready for MD2 markup."""
-    logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
+    logger.debug(LogTemplates[__name__].FUNCTION_INIT.format(
         stack()[0][3], lang))
 
     header_templates = FORMATTER_TEMPLATES[lang]['stats']['periods'][period]
@@ -73,7 +76,7 @@ def format_stats(raw_data: dict, period: str, lang: str) -> str:
 def format_activities(data: list, lang: str) -> str:
     """Formats list of activities raw data with specific template
     and returns escaped message, ready for MD2 markup."""
-    logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
+    logger.debug(LogTemplates[__name__].FUNCTION_INIT.format(
         stack()[0][3], lang))
     # Formatting each dict in the list.
     for section in data:
@@ -89,7 +92,7 @@ def format_activities(data: list, lang: str) -> str:
 def format_activity(data: dict, lang: str) -> str:
     """Formats activity raw data with specific template
     and returns escaped message, ready for MD2 markup."""
-    logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
+    logger.debug(LogTemplates[__name__].FUNCTION_INIT.format(
         stack()[0][3], lang))
     locale_type(data, lang)
     insert_idle(data)
@@ -112,7 +115,7 @@ def format_activity(data: dict, lang: str) -> str:
 def format_segment(data: dict, lang: str) -> str:
     """Formats segment raw data with specific template
     and returns escaped message, ready for MD2 markup."""
-    logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
+    logger.debug(LogTemplates[__name__].FUNCTION_INIT.format(
         stack()[0][3], lang))
     # Preparing dict for formatting with template.
     data['type'] = data['activity_type']
@@ -129,7 +132,7 @@ def format_segment(data: dict, lang: str) -> str:
 def format_starred_segments(data: list, lang: str) -> str:
     """Formats starred segments raw data with specific template
     and returns escaped message, ready for MD2 markup."""
-    logger.debug(LOG_TEMPLATES['FUNCTION_INIT'].format(
+    logger.debug(LogTemplates[__name__].FUNCTION_INIT.format(
         stack()[0][3], lang))
     # Formatting each dict in the list.
     for section in data:
@@ -255,6 +258,5 @@ def format_users(users: list) -> str:
     """Formatting list of strava ids from the database to MD2 with links."""
     message = FORMATTER_TEMPLATES['users_template'].format(len(users))
     for user in users:
-        id = user[0]
-        message += '[{}]({}{}) '.format(id, Urls.PROFILE.value, id)
+        message += '[{}]({}{}) '.format(user, Urls.PROFILE.value, user)
     return message

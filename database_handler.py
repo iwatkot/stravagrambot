@@ -1,146 +1,99 @@
-import psycopg2
-
-from decouple import config
-from psycopg2 import Error
 from datetime import datetime
 
-from format_handler import get_template
-from log_handler import Logger
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+from decouple import config
+from log_handler import Logger, LogTemplates
 
-QUERY_TEMPLATES = get_template('query_templates')
-LOG_TEMPLATES = get_template('log_templates')['database_handler']
 logger = Logger(__name__)
+Base = declarative_base()
 
 
-class DataBase:
-    """Handles connections to the database along with SQL queries for adding
-    or changind data in the database. Initiates the database with auth_data
-    if the class called from webserver, or with telegram_id
-    if it was called from bot."""
-    def __init__(self, telegram_id: int = None, auth_data: dict = None,
-                 strava_id: int = None):
-        self.user = config('PUSER')
-        self.password = config('PASSWORD')
-        self.host = config('HOST')
-        self.port = config('PORT')
-        self.ssl_mode = 'require'
-        self.database = config('DATABASE')
-        self.auth_data = auth_data
+class Users(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True)
+    telegram_id = Column(Integer)
+    strava_id = Column(Integer)
+    token_type = Column(String)
+    access_token = Column(String)
+    expires_at = Column(Integer)
+    refresh_token = Column(String)
+
+    def __repr__(self):
+        return f"<User(id='{self.id}', telegram_id='{self.telegram_id}', "\
+            f"strava_id='{self.strava_id}')>"
+
+
+class DatabaseSession:
+    def __init__(self, telegram_id):
+        self.connection_config = {
+            'user': config('DBUSER'),
+            'password': config('PASSWORD'),
+            'host': config('HOST'),
+            'port': config('PORT'),
+            'database': config('DATABASE'),
+            'sslmode': 'require'}
+
+        self.engine = create_engine('postgresql://',
+                                    connect_args=self.connection_config)
         self.telegram_id = telegram_id
-        # Initiates the database connection.
+
         self.connect()
-        if not self.connection:
-            logger.error(LOG_TEMPLATES['CANT_CONNECT'])
-
-    def connect(self) -> None:
-        """Initiates the database connection and
-        assigns it to the connection variable."""
-        try:
-            self.connection = psycopg2.connect(
-                user=self.user,
-                password=self.password,
-                host=self.host,
-                port=self.port,
-                sslmode=self.ssl_mode,
-                database=self.database)
-            logger.debug(LOG_TEMPLATES['CONNECTED'].format(self.telegram_id))
-        except (Exception, Error) as error:
-            logger.error(error)
-            self.connection = None
-
-    def disconnect(self) -> None:
-        """Closes the database connection."""
-        if self.connection:
-            self.connection.close()
-            logger.debug(LOG_TEMPLATES['DISCONNECTED'].format(
+        if self.session:
+            logger.debug(LogTemplates[__name__].CONNECTED.format(
                 self.telegram_id))
         else:
-            logger.warning(LOG_TEMPLATES['NO_CONNECTION'])
+            logger.error(LogTemplates[__name__].CANT_CONNECT)
 
-    def in_database(self) -> bool:
-        """Checking if the telegram_id exists in the database."""
-        cursor = self.connection.cursor()
-        check_query = QUERY_TEMPLATES['check_query'].format(self.telegram_id)
-        cursor.execute(check_query)
-        db_response = cursor.fetchone()[0]
-        cursor.close()
-        return db_response
+        self.user = None
+        if self.exists_in_database():
+            self.user = self.session.query(Users).filter(
+                Users.telegram_id == self.telegram_id).one()
 
-    def modify_data(self, action: str = None) -> None:
-        """Depending of the action deletes entry from the database and
-        then adds a new one."""
-        cursor = self.connection.cursor()
-        if action == 'update':
-            delete_query = QUERY_TEMPLATES['delete_query'].format(
-                self.telegram_id)
-            logger.info(LOG_TEMPLATES['DELETED_FROM_DATABASE'].format(
-                self.telegram_id))
-            cursor.execute(delete_query)
-            self.connection.commit()
-        insert_query = QUERY_TEMPLATES['insert_query'].format(
-            *self.auth_data.values())
-        logger.info(LOG_TEMPLATES['ADDED_TO_DATABASE'].format(
+    def connect(self):
+        try:
+            Session = sessionmaker(bind=self.engine)
+            self.session = Session()
+        except Exception as error:
+            logger.error(LogTemplates[__name__].CONNECTION_ERROR.format(
+                error))
+
+    def disconnect(self):
+        self.session.close()
+        logger.debug(LogTemplates[__name__].DISCONNECTED.format(
             self.telegram_id))
-        cursor.execute(insert_query)
-        self.connection.commit()
-        cursor.close()
 
-    def update_data(self) -> None:
-        """Updates token information in the database."""
-        cursor = self.connection.cursor()
-        update_query = QUERY_TEMPLATES['update_query'].format(
-            self.auth_data['token_type'], self.auth_data['access_token'],
-            self.auth_data['expires_at'], self.auth_data['refresh_token'],
-            self.telegram_id)
-        cursor.execute(update_query)
-        logger.info(LOG_TEMPLATES['TOKEN_REFRESHED'].format(self.telegram_id))
-        self.connection.commit()
-        cursor.close()
+    def exists_in_database(self):
+        return self.session.query(Users).filter(
+            Users.telegram_id == self.telegram_id).count() > 0
 
-    def token_expired(self) -> bool:
-        """Returns bool value while checking if the expires_at value
-        are in the past or in next 60 minutes."""
-        cursor = self.connection.cursor()
-        expires_at_query = QUERY_TEMPLATES['expires_at_query'].format(
-            self.telegram_id)
-        cursor.execute(expires_at_query)
-        db_response = cursor.fetchone()[0]
+    def token_expired(self):
         now = datetime.now().timestamp()
-        cursor.close()
-        expired = now > db_response - (60 * 60)
-        return expired
+        return now > self.user.expires_at - (60 * 60)
 
-    def get_token(self, token_type: str) -> str:
-        """Returns token from the database. If the access token isn't expired
-        yet it will return access token, otherwise - refresh token."""
-        logger.debug(LOG_TEMPLATES['GETTING_TOKEN'].format(
-            token_type, self.telegram_id))
-        cursor = self.connection.cursor()
-        get_token_query = QUERY_TEMPLATES['get_token_query'].format(
-            token_type, self.telegram_id)
-        cursor.execute(get_token_query)
-        db_response = cursor.fetchone()[0]
-        cursor.close()
-        return db_response
+    def get_token(self):
+        return self.user.refresh_token if self.token_expired() else \
+            self.user.access_token
 
-    def get_strava_id(self) -> int:
-        """Returns strava_id from the database."""
-        logger.debug(LOG_TEMPLATES['GETTING_STRAVA_ID'].format(
+    def get_users(self):
+        return [user[0] for user in self.session.query(
+            Users.strava_id).order_by(Users.id).all()]
+
+    def add_user(self, auth_data):
+        if self.exists_in_database():
+            self.session.query(Users).filter(
+                Users.telegram_id == self.telegram_id).delete()
+            self.session.commit()
+            logger.info(LogTemplates[__name__].DELETED_FROM_DATABASE.format(
+                self.telegram_id))
+        new_user = Users(**auth_data)
+        self.session.add(new_user)
+        self.session.commit()
+        logger.info(LogTemplates[__name__].ADDED_TO_DATABASE.format(
             self.telegram_id))
-        cursor = self.connection.cursor()
-        get_strava_id_query = QUERY_TEMPLATES['get_strava_id_query'].format(
-            self.telegram_id)
-        cursor.execute(get_strava_id_query)
-        strava_id = cursor.fetchone()[0]
-        cursor.close()
-        return strava_id
 
-    def get_users(self) -> list:
-        """Returns list of all users (strava_id) in th database."""
-        logger.debug(LOG_TEMPLATES['GETTING_USERS'])
-        cursor = self.connection.cursor()
-        get_users_query = QUERY_TEMPLATES['get_users']
-        cursor.execute(get_users_query)
-        users = cursor.fetchall()
-        cursor.close()
-        return users
+    def update_user(self, auth_data):
+        self.session.query(Users).filter_by(
+            telegram_id=self.telegram_id).update(auth_data)
+        self.session.commit()

@@ -6,13 +6,12 @@ from flask_bootstrap import Bootstrap4
 from decouple import config
 
 from format_handler import get_template, get_content
-from database_handler import DataBase
-from log_handler import Logger
+from database_handler import DatabaseSession
+from log_handler import Logger, LogTemplates
 from token_handler import Token
+from templates_handler import Constants
 
 FLASK_TEMPLATES = get_template('flask_templates')
-LOG_TEMPLATES = get_template('log_templates')['flask_server']
-SUPPORTED_LANGUAGES = ["en", "ru"]
 logger = Logger('flask_server')
 flask_log = logging.getLogger('werkzeug')
 flask_log.disabled = True
@@ -23,11 +22,11 @@ bootstrap = Bootstrap4(app)
 
 @app.route('/webhooks/', methods=["GET"])
 def webhook_challenge():
-    logger.debug(LOG_TEMPLATES['GET_REQUEST'].format(request.full_path))
+    logger.debug(LogTemplates[__name__].GET_REQUEST.format(request.full_path))
     verify_token = request.args.get('hub.verify_token')
     if verify_token == config('VERIFY_TOKEN'):
         hub_challenge = request.args.get('hub.challenge')
-        logger.debug(LOG_TEMPLATES['RETURNING_HUB_CHALLENGE'].format(
+        logger.debug(LogTemplates[__name__].RETURNING_HUB_CHALLENGE.format(
             hub_challenge))
         return json.dumps({'hub.challenge': hub_challenge}), 200
 
@@ -36,27 +35,26 @@ def webhook_challenge():
 def webhook_catcher():
     if request.content_type == 'application/json':
         json_data = request.json
-        logger.info(LOG_TEMPLATES['WEBHOOK_RECIEVED'].format(json_data))
+        logger.info(LogTemplates[__name__].WEBHOOK_RECIEVED.format(json_data))
     return '', 200
 
 
 @app.route('/stravagramoauth')
 def oauth():
-    lang = 'ru' if request.accept_languages.best_match(
-        SUPPORTED_LANGUAGES) == 'ru' else 'en'
+    lang = locale_check(request)
     context = FLASK_TEMPLATES['locale'][lang]
-    logger.debug(LOG_TEMPLATES['GET_REQUEST'].format(request.full_path))
+    logger.debug(LogTemplates[__name__].GET_REQUEST.format(request.full_path))
     telegram_id = request.args.get('telegram_id')
     code = request.args.get('code')
     scope = request.args.get('scope')
     if 'activity:read_all' not in scope:
-        logger.debug(LOG_TEMPLATES['BAD_REQUEST'].format(telegram_id))
+        logger.debug(LogTemplates[__name__].BAD_REQUEST.format(telegram_id))
         message = FLASK_TEMPLATES['locale'][lang]['oauth_bad_message']
         result = FLASK_TEMPLATES['locale'][lang]['oauth_bad']
         return render_template('pages/oauth.html', context=context,
                                result=result, message=message)
     else:
-        logger.debug(LOG_TEMPLATES['GOOD_REQUEST'].format(
+        logger.debug(LogTemplates[__name__].GOOD_REQUEST.format(
                     telegram_id, code))
         oauth_init(telegram_id, code)
         message = FLASK_TEMPLATES['locale'][lang]['oauth_good_message']
@@ -87,7 +85,7 @@ def pages():
 def locale_check(request) -> str:
     """Returns the language code of GET request."""
     lang = 'ru' if request.accept_languages.best_match(
-        SUPPORTED_LANGUAGES) == 'ru' else 'en'
+        Constants.SUPPORTED_LANGUAGES.value) == 'ru' else 'en'
     return lang
 
 
@@ -97,24 +95,18 @@ def oauth_init(telegram_id: int, code: str) -> None:
     token = Token(telegram_id, code=code)
     auth_data = token.exchange()
     if auth_data:
-        oauth_session = DataBase(telegram_id, auth_data)
-        if not oauth_session.connection:
-            logger.error(LOG_TEMPLATES['NOT_CONNECTED'])
-            return None
-        if oauth_session.in_database():
-            oauth_session.modify_data('update')
-        else:
-            oauth_session.modify_data()
+        oauth_session = DatabaseSession(telegram_id)
+        oauth_session.add_user(auth_data)
         oauth_session.disconnect()
     else:
-        logger.error(LOG_TEMPLATES['OAUTH_FAILED'])
+        logger.error(LogTemplates[__name__].OAUTH_FAILED)
 
 
 def run_server():
     port = 80
-    logger.info(LOG_TEMPLATES['SERVER_STARTED'].format(port))
+    logger.info(LogTemplates[__name__].SERVER_STARTED.format(port))
     app.run(port=port, host='0.0.0.0')
-    logger.warning(LOG_TEMPLATES['SERVER_STOPPED'])
+    logger.warning(LogTemplates[__name__].SERVER_STOPPED)
 
 
 if __name__ == '__main__':

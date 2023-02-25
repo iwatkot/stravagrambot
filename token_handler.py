@@ -2,11 +2,9 @@ import requests
 
 from decouple import config
 
-from format_handler import get_template
-from log_handler import Logger
+from log_handler import Logger, LogTemplates
+from format_handler import Urls
 
-STRAVA_API = "https://www.strava.com/api/v3/oauth/token"
-LOG_TEMPLATES = get_template('log_templates')['token_handler']
 logger = Logger(__name__)
 
 
@@ -33,10 +31,10 @@ class Token():
         else:
             data['code'] = self.code
             data['grant_type'] = 'authorization_code'
-        raw_response = requests.post(STRAVA_API, data=data)
+        raw_response = requests.post(Urls.STRAVA_API, data=data)
         if raw_response.status_code == 200:
             response = raw_response.json()
-            logger.info(LOG_TEMPLATES['RESPONSE_FROM_API'].format(
+            logger.info(LogTemplates[__name__].GOOD_RESPONSE_FROM_API.format(
                 self.telegram_id))
             auth_data = {
                 "telegram_id": self.telegram_id,
@@ -48,7 +46,8 @@ class Token():
                 "access_token": response['access_token'],
                 "expires_at": response['expires_at'],
                 "refresh_token": response['refresh_token']})
+            print(auth_data)
             return auth_data
         else:
-            logger.error(LOG_TEMPLATES['BAD_RESPONSE_FROM_API'].format(
+            logger.error(LogTemplates[__name__].BAD_RESPONSE_FROM_API.format(
                 self.telegram_id))

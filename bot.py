@@ -12,10 +12,10 @@ from datetime import datetime
 import format_handler as formatter
 
 from webhook_handler import WebHook
-from database_handler import DataBase
+from database_handler import DatabaseSession
 from flask_server import run_server
 from format_handler import get_template
-from api import APICaller
+from api_handler import APICaller
 from log_handler import Logger, get_log_file
 
 logger = Logger('bot')
@@ -213,8 +213,9 @@ async def users_handler(message: types.Message):
     Only available for admin user."""
     telegram_id, lang, user_name = unpack_message(message)
     if telegram_id == ADMIN:
-        users_session = DataBase(telegram_id=telegram_id)
+        users_session = DatabaseSession(telegram_id)
         users = users_session.get_users()
+        users_session.disconnect()
         formatted_message = formatter.format_users(users)
         await bot.send_message(telegram_id, formatted_message,
                                disable_web_page_preview=True,
