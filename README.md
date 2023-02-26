@@ -34,8 +34,8 @@ Very strange, but Strava API doesn't provide any option to download the GPX file
 **token_handler** - handles API exchange tokens procedure: getting access token after init and refreshes the token, when it's expired.<br>
 **webhook_handler** - handles Strava webhook subscription (subscribe, view, delete).<br>
 
-## Commands_List of 
-_initial_ commands,_ which are shown in the main menu of the bot:_<br>
+## Commands 
+__List of initial_ commands,_ which are shown in the main menu of the bot:_<br>
 **/start** - Starts the bot and sends the user short tips.<br>
 **/auth** - Sends user Strava OAuth link to perform the authentication process.<br>
 **/stats<>** - Sends the user formatted stats from the Strava account. all - for overall stats and year for current year stats.<br>
@@ -57,6 +57,7 @@ The bot will answer admin commands only if the user's Telegram ID is equal to `A
 
 
 ## Changelog
+**2023/02/25** - The bot uses a menu now to interact with the user.
 **2023/02/25** - Moved from /commands to inline buttons.<br>
 **2023/02/25** - Massive changes in the way templates are stored. Moved to SQLAlchemy from raw SQL requests.<br>
 **2023/01/31** - Massive refactoring of most modules.<br>

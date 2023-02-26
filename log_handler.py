@@ -93,7 +93,7 @@ class Logger(logging.getLoggerClass()):
         self.setLevel(logging.DEBUG)
         self.stdout_handler = logging.StreamHandler(sys.stdout)
         self.file_handler = logging.FileHandler(
-            filename=LOG_FILE, mode='a')
+            filename=LOG_FILE, mode='a', encoding='utf-8')
         self.fmt = LOG_FORMATTER
         self.stdout_handler.setFormatter(logging.Formatter(LOG_FORMATTER))
         self.file_handler.setFormatter(logging.Formatter(LOG_FORMATTER))

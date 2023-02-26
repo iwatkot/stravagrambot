@@ -27,10 +27,6 @@ class Constants(Enum):
     ABSOLUTE_PATH = os.path.dirname(__file__)
     DIRS = ['logs', 'gpx', 'images']
     SUPPORTED_LANGUAGES = ["en", "ru"]
-    PERIODS = {
-        "/statsall": "all",
-        "/statsyear": "year",
-        "/weekavg": "week"}
 
 
 def startup():
