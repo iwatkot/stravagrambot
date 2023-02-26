@@ -25,29 +25,19 @@ The `WebHook` class is designed to handle Strava webhook subscriptions. It's als
 Very strange, but Strava API doesn't provide any option to download the GPX file for the activity, so the bot generates it by itself using data streams. The code, which handles GPX generating is copy-pasted from [PhysicsDan's GPXfromStravaAPI](https://github.com/PhysicsDan/GPXfromStravaAPI).
 
 ## Modules
-**api** - handles data receiving from the API using information from database_handler and token_handler<br>
+**api_handler** - handles data receiving from the API using information from database_handler and token_handler<br>
 **bot** - the main script, which handles interaction with telegram user<br>
 **database_handler** - handles operations with database, such as inserting data from the ouath_init() and getting access_tokens for API calls<br>
 **flask_server** - handles OAuth and webhooks request. Also provides access to simple webpages with some info<br>
 **format_handler** - handles the nastiest part of the bot: formatting raw data from the API to something that humans can understand. Since the raw data sometimes is a little bit weird, the module has a lot of functions to convert data.<br>
 **log_handler** - a short and simple module, which provides a Logger class all across the bot modules.<br>
+**templates_handler** - stores some constants and templates to use in other modules.<br>
 **token_handler** - handles API exchange tokens procedure: getting access token after init and refreshes the token, when it's expired.<br>
 **webhook_handler** - handles Strava webhook subscription (subscribe, view, delete).<br>
 
-## Commands 
-__List of initial_ commands,_ which are shown in the main menu of the bot:_<br>
-**/start** - Starts the bot and sends the user short tips.<br>
-**/auth** - Sends user Strava OAuth link to perform the authentication process.<br>
-**/stats<>** - Sends the user formatted stats from the Strava account. all - for overall stats and year for current year stats.<br>
-**/recent** - Sends the user formatted list of activities in the last 60 days with links to view full information about the specified activity.<br>
-**/find** - Starts the state to find activities in the specified period (look state commands).<br>
-**/weekavg** - Mostly the same as /statsyear, but the stats will be divided by the number of the current week so the user can see his effort per week.<br><br>
-_List of context commands, which are not shown in the menu, but available at any moment:_<br>
-**/activity<>** - Shows detailed information about the activity, requires activity ID in the command.<br>
-**/segment<>** - Shows detailed information about the segment, and requires segment ID in the command.<br>
-**/download<>** - Generates GPX file from the activity and sends it back to the user, requires activity ID in the command.<br><br>
-_List of state commands, which are not shown in the menu and are available only in specific bot state:_<br>
-**/cancel** - Cancels the current state (operation).<br>
+## Menu buttons
+_add later_
+
 
 ## Admin commands
 The bot will answer admin commands only if the user's Telegram ID is equal to `ADMIN` (from an external file).<br>
@@ -57,7 +47,7 @@ The bot will answer admin commands only if the user's Telegram ID is equal to `A
 
 
 ## Changelog
-**2023/02/25** - The bot uses a menu now to interact with the user.
+**2023/02/25** - The bot uses a menu now to interact with the user.<br>
 **2023/02/25** - Moved from /commands to inline buttons.<br>
 **2023/02/25** - Massive changes in the way templates are stored. Moved to SQLAlchemy from raw SQL requests.<br>
 **2023/01/31** - Massive refactoring of most modules.<br>
