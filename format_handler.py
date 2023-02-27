@@ -113,7 +113,8 @@ def format_activity(data: dict, lang: str) -> str:
         stack()[0][3], lang))
     locale_type(data, lang)
     insert_idle(data)
-    insert_pace(data)
+    if data.get('type') == 'Run':
+        insert_pace(data)
     # Preparing dict for formatting with template.
     data['gear_nickname'] = data.get('gear').get('nickname')
     data['gear_id'] = data.get('gear').get('id')

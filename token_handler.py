@@ -46,7 +46,6 @@ class Token():
                 "access_token": response['access_token'],
                 "expires_at": response['expires_at'],
                 "refresh_token": response['refresh_token']})
-            print(auth_data)
             return auth_data
         else:
             logger.error(LogTemplates[__name__].BAD_RESPONSE_FROM_API.format(

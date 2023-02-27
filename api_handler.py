@@ -45,7 +45,7 @@ class APICaller:
                     LogTemplates[__name__].UPDATE_TOCKEN_FAILED.format(
                         self.telegram_id))
                 return
-        self.access_token = token_session.get_token()
+        self.access_token = token_session.user.access_token
         token_session.disconnect()
 
     def get_stats(self) -> dict:

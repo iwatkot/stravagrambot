@@ -8,7 +8,6 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.dispatcher.filters import Text
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from decouple import config
@@ -140,6 +139,70 @@ async def start_handler(message: types.Message):
     await asyncio.sleep(3)
     await bot.send_message(telegram_id, BOT_MESSAGES[lang].TOUR,
                            parse_mode='MarkdownV2')
+
+
+# Administration commands.
+
+@dp.message_handler(commands=["users"])
+async def users_handler(message: types.Message):
+    """Returns formatted list of users with links to the Strava.
+    Only available for admin user."""
+    telegram_id, lang, user_name = unpack_message(message)
+    if telegram_id == ADMIN:
+        users_session = DatabaseSession(telegram_id)
+        users = users_session.get_users()
+        users_session.disconnect()
+        formatted_message = formatter.format_users(users)
+        await bot.send_message(telegram_id, formatted_message,
+                               disable_web_page_preview=True,
+                               parse_mode='MarkdownV2')
+
+
+@dp.message_handler(commands=["logs"])
+async def logs_handler(message: types.Message):
+    """Returns txt log file. Only available for admin user."""
+    telegram_id, lang, user_name = unpack_message(message)
+    if telegram_id == ADMIN:
+        log_file = types.InputFile(get_log_file())
+        await bot.send_document(telegram_id, log_file)
+
+
+@dp.message_handler(regexp_commands=[r'/webhook?(?P<action>\w+)'])
+async def webhook_handler(message: types.Message,
+                          regexp_command: re.Match[str]):
+    """Handles operations with Strava webhook subscription (subscribe,
+    view and delete). Only available for admin user."""
+    action = regexp_command['action']
+    telegram_id, lang, user_name = unpack_message(message)
+    if telegram_id == ADMIN:
+        webhook = WebHook()
+        if action == 'subscribe':
+            result = webhook.subscribe()
+            if result:
+                await bot.send_message(
+                    telegram_id, BOT_MESSAGES[lang].WH_SUB_GOOD.format(
+                        result))
+            else:
+                await bot.send_message(
+                    telegram_id, BOT_MESSAGES[lang].WH_SUB_BAD)
+        elif action == 'view':
+            result = webhook.view()
+            if result:
+                await bot.send_message(
+                    telegram_id, BOT_MESSAGES[lang].WH_VIEW_GOOD.format(
+                        result))
+            else:
+                await bot.send_message(
+                    telegram_id, BOT_MESSAGES[lang].WH_VIEW_BAD)
+        elif action == 'delete':
+            webhook.view()
+            result = webhook.delete()
+            if result:
+                await bot.send_message(
+                    telegram_id, BOT_MESSAGES[lang].WH_DEL_GOOD)
+            else:
+                await bot.send_message(
+                    telegram_id, BOT_MESSAGES[lang].WH_DEL_BAD)
 
 
 # Non-button functions.
@@ -412,71 +475,6 @@ async def segment_callback(callback_query: types.CallbackQuery):
         await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
     else:
         await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITY)
-
-
-# Administration commands.
-
-@dp.message_handler(commands=["users"])
-async def users_handler(message: types.Message):
-    """Returns formatted list of users with links to the Strava.
-    Only available for admin user."""
-    telegram_id, lang, user_name = unpack_message(message)
-    if telegram_id == ADMIN:
-        users_session = DatabaseSession(telegram_id)
-        users = users_session.get_users()
-        users_session.disconnect()
-        formatted_message = formatter.format_users(users)
-        await bot.send_message(telegram_id, formatted_message,
-                               disable_web_page_preview=True,
-                               parse_mode='MarkdownV2')
-
-
-@dp.message_handler(commands=["logs"])
-async def logs_handler(message: types.Message):
-    """Returns txt log file. Only available for admin user."""
-    telegram_id, lang, user_name = unpack_message(message)
-    if telegram_id == ADMIN:
-        log_file = types.InputFile(get_log_file())
-        await bot.send_document(telegram_id, log_file)
-
-
-@dp.message_handler(regexp_commands=[r'/webhook?(?P<action>\w+)'])
-async def webhook_handler(message: types.Message,
-                          regexp_command: re.Match[str]):
-    """Handles operations with Strava webhook subscription (subscribe,
-    view and delete). Only available for admin user."""
-    action = regexp_command['action']
-    telegram_id, lang, user_name = unpack_message(message)
-    if telegram_id == ADMIN:
-        webhook = WebHook()
-        if action == 'subscribe':
-            result = webhook.subscribe()
-            if result:
-                await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_SUB_GOOD.format(
-                        result))
-            else:
-                await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_SUB_BAD)
-        elif action == 'view':
-            result = webhook.view()
-            if result:
-                await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_VIEW_GOOD.format(
-                        result))
-            else:
-                await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_VIEW_BAD)
-        elif action == 'delete':
-            webhook.view()
-            result = webhook.delete()
-            if result:
-                await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_DEL_GOOD)
-            else:
-                await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_DEL_BAD)
-
 
 # Message and callbacks unpackers.
 
