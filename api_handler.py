@@ -5,6 +5,7 @@ import gpxpy.gpx
 import pandas as pd
 
 from datetime import datetime, timedelta
+from inspect import stack
 
 from database_handler import DatabaseSession
 from token_handler import Token
@@ -30,42 +31,64 @@ class APICaller:
         """Getting access token from the database.
         If token expired launches the token exchange procedure
         and updates token in the database."""
-        token_session = DatabaseSession(self.telegram_id)
-        self.strava_id = token_session.strava_id
-        if token_session.token_expired():
-            refresh_token = token_session.get_token()
+        check_session = DatabaseSession(self.telegram_id)
+        self.strava_id = check_session.strava_id
+        self.access_token = check_session.user.access_token
+        logger.debug(
+            LogTemplates[__name__].ACCESS_TOKEN.format(self.access_token))
+        if check_session.token_expired():
+            logger.debug(
+                LogTemplates[__name__].TOKEN_EXPIRED.format(self.telegram_id))
+            refresh_token = check_session.get_token()
             token = Token(self.telegram_id, refresh_token=refresh_token)
+            check_session.disconnect()
             auth_data = token.exchange()
             if auth_data:
                 update_session = DatabaseSession(self.telegram_id)
                 update_session.update_user(auth_data)
+                self.access_token = update_session.user.access_token
+                logger.debug(
+                    LogTemplates[__name__].TOKEN_UPDATED.format(
+                        self.access_token))
                 update_session.disconnect()
             else:
                 logger.error(
                     LogTemplates[__name__].UPDATE_TOCKEN_FAILED.format(
                         self.telegram_id))
                 return
-        self.access_token = token_session.user.access_token
-        token_session.disconnect()
 
     def get_stats(self) -> dict:
         """Makes call to the API to recieve athlete's stats."""
         url = Urls.GET_STATS.format(self.strava_id)
+        logger.debug(LogTemplates[__name__].FUNCTION_INIT.format(
+            stack()[0][3], self.telegram_id))
         response = requests.get(url, headers=self.headers)
         if response.status_code == 200:
             return response.json()
+        else:
+            logger.warning(
+                LogTemplates[__name__].BAD_RESPONSE.format(self.telegram_id,
+                                                           response.text))
 
     def raw_data(self, **kwargs) -> dict:
         """Making simple API calls and returns dict with raw data."""
         url = Urls[list(kwargs.keys())[0]].format(*kwargs.values())
+        logger.debug(LogTemplates[__name__].FUNCTION_INIT.format(
+            stack()[0][3], self.telegram_id))
         response = requests.get(url, headers=self.headers)
         if response.status_code == 200:
             return response.json()
+        else:
+            logger.warning(
+                LogTemplates[__name__].BAD_RESPONSE.format(self.telegram_id,
+                                                           response.text))
 
     def get_activities(self, after: int = None, before: int = None) -> list:
         """Returns the list of the activities
         in the specified period of time"""
         url = Urls.GET_ACTIVITIES
+        logger.debug(LogTemplates[__name__].FUNCTION_INIT.format(
+            stack()[0][3], self.telegram_id))
         # If period of time wasn't specified, using 60 days before now.
         if not after and not before:
             before = int(datetime.now().timestamp())
@@ -78,6 +101,10 @@ class APICaller:
         response = requests.get(url, params=params, headers=self.headers)
         if response.status_code == 200:
             return response.json()[::-1]
+        else:
+            logger.warning(
+                LogTemplates[__name__].BAD_RESPONSE.format(self.telegram_id,
+                                                           response.text))
 
     def create_gpx(self, activity_id: int) -> str:
         """Creates GPX files from API streams request,

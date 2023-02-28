@@ -53,6 +53,11 @@ class WebhookHandlerModel(BaseModel):
 
 
 class ApiHandlerModel(BaseModel):
+    ACCESS_TOKEN: str
+    TOKEN_EXPIRED: str
+    TOKEN_UPDATED: str
+    FUNCTION_INIT: str
+    BAD_RESPONSE: str
     UPDATE_TOCKEN_FAILED: str
     INIT: str
     NO_TOKEN: str

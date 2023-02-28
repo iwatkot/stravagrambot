@@ -71,7 +71,7 @@ class DatabaseSession:
 
     def token_expired(self):
         now = datetime.now().timestamp()
-        return now > self.user.expires_at - (60 * 60)
+        return now > self.user.expires_at - (6 * 60 * 60)
 
     def get_token(self):
         return self.user.refresh_token if self.token_expired() else \

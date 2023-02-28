@@ -35,6 +35,11 @@
         "NO_SUB_TO_DELETE": "Bot tried to delete subscription while it's no active subscription."
     },
     "api_handler": {
+        "ACCESS_TOKEN": "Readed acccess token [{}] from the database",
+        "TOKEN_EXPIRED": "The acccess token for Telegram ID: [{}] is expired.",
+        "TOKEN_UPDATED": "Access token [{}] successfully updated.",
+        "FUNCTION_INIT": "Launched function [{}] for Telegram ID [{}].",
+        "BAD_RESPONSE": "Bad response from API for Telegram ID: [{}]. Response from API: [{}].",
         "UPDATE_TOCKEN_FAILED": "The update of the token for Telegram ID: [{}] has failed due to bad API response.",
         "INIT": "API caller initiated for Telegram ID: [{}].",
         "NO_TOKEN": "Can't get the acccess token from the database for Telegram ID: [{}].",
