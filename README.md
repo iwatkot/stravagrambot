@@ -47,6 +47,7 @@ The bot will answer admin commands only if the user's Telegram ID is equal to `A
 
 
 ## Changelog
+**2023/03/02** - Fixed bug when no gear in activity caused format_handler to crash.<br> 
 **2023/02/26** - Fixed bug when the bot used refresh token after getting new access token.<br>
 **2023/02/26** - The bot uses a menu now to interact with the user.<br>
 **2023/02/25** - Moved from /commands to inline buttons.<br>
