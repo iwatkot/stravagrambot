@@ -365,18 +365,21 @@ async def recent_button_handler(message_text, telegram_id, lang):
 async def last_button_handler(message_text, telegram_id, lang):
     caller = APICaller(telegram_id)
     activities = caller.get_activities()
+    print(len(activities))
     if not activities:
         await bot.send_message(
             telegram_id, BOT_MESSAGES[lang].NO_ACTIVITIES)
         return
     last_activity = activities[-1]
     activity_id = last_activity.get('id')
+    print(activity_id)
     inline_buttons = {
         f"gpx{activity_id}": BOT_MESSAGES[lang].GPX,
         f"actseg{activity_id}": BOT_MESSAGES[lang].ACTSEG}
     inline_keyboard = generate_inline_keyboard(inline_buttons)
 
     raw_data = caller.raw_data(get_activity=activity_id)
+    print(len(raw_data))
     if raw_data:
         data = formatter.format_activity(raw_data, lang)
         await bot.send_message(telegram_id, data,

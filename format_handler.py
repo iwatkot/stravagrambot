@@ -116,8 +116,11 @@ def format_activity(data: dict, lang: str) -> str:
     if data.get('type') == 'Run':
         insert_pace(data)
     # Preparing dict for formatting with template.
-    data['gear_nickname'] = data.get('gear').get('nickname')
-    data['gear_id'] = data.get('gear').get('id')
+    try:
+        data['gear_nickname'] = data.get('gear').get('nickname')
+        data['gear_id'] = data.get('gear').get('id')
+    except AttributeError:
+        logger.error(LogTemplates[__name__].NO_GEAR_ERROR)
     segment_data = data.get('segment_efforts')
     # Formatting values in the data dict.
     value_formatter(data)

@@ -48,7 +48,8 @@
         "GPX_CREATED": "GPX file successfully created with filename: [{}]."
     },
     "format_handler": {
-        "FUNCTION_INIT": "Launched function [{}] for language [{}]."
+        "FUNCTION_INIT": "Launched function [{}] for language [{}].",
+        "NO_GEAR_ERROR": "Activity has no gear data."
     },
     "bot": {
         "LOG_MESSAGE": "The telegram user with ID [{}] send bot the message: [{}].",

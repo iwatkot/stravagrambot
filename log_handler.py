@@ -68,6 +68,7 @@ class ApiHandlerModel(BaseModel):
 
 class FormatHandlerModel(BaseModel):
     FUNCTION_INIT: str
+    NO_GEAR_ERROR: str
 
 
 class BotModel(BaseModel):
