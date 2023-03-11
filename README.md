@@ -30,6 +30,7 @@ Very strange, but Strava API doesn't provide any option to download the GPX file
 **database_handler** - handles operations with database, such as inserting data from the ouath_init() and getting access_tokens for API calls<br>
 **flask_server** - handles OAuth and webhooks request. Also provides access to simple webpages with some info<br>
 **format_handler** - handles the nastiest part of the bot: formatting raw data from the API to something that humans can understand. Since the raw data sometimes is a little bit weird, the module has a lot of functions to convert data.<br>
+**image_handler** - contains a class, which is designed for creating images with activity data.<br>
 **log_handler** - a short and simple module, which provides a Logger class all across the bot modules.<br>
 **templates_handler** - stores some constants and templates to use in other modules.<br>
 **token_handler** - handles API exchange tokens procedure: getting access token after init and refreshes the token, when it's expired.<br>
@@ -47,6 +48,7 @@ The bot will answer admin commands only if the user's Telegram ID is equal to `A
 
 
 ## Changelog
+**2023/03/12** - Added feature to create images for Instagram stories.<br>
 **2023/03/02** - Fixed bug when no gear in activity caused format_handler to crash.<br> 
 **2023/02/26** - Fixed bug when the bot used refresh token after getting new access token.<br>
 **2023/02/26** - The bot uses a menu now to interact with the user.<br>
