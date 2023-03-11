@@ -51,6 +51,24 @@
         "FUNCTION_INIT": "Launched function [{}] for language [{}].",
         "NO_GEAR_ERROR": "Activity has no gear data."
     },
+    "image_handler": {
+        "CANT_GET_IMAGE_URL": "Can't get the image URL from the API response for activity with ID: [{}].",
+        "CANT_GET_POLYLINE": "Can't get the polyline from the API response for activity with ID: [{}].",
+        "SAVED_IMAGE": "Image successfully saved with filename: [{}].",
+        "SAVED_ROUTE": "Route successfully saved with filename: [{}].",
+        "PACE_CALCULATED": "Pace calculated for the activity with ID: [{}].",
+        "SPEED_CALCULATED": "Speed calculated for the activity with ID: [{}].",
+        "STATS_PREPARED": "Stats prepared for the activity with ID: [{}].",
+        "TEMPLATE_SELECTED": "Template [{}] selected for the activity.",
+        "HEARTRATE_ADDED": "Heartrate [{}] added to the image",
+        "ACHIEVEMENTS_ADDED": "Achievements [{}] added to the image",
+        "STATS_ADDED": "Stats added to the image for the activity with ID: [{}].",
+        "CANT_ADD_IMAGE": "Can't add image to the story image with error: [{}].",
+        "CALCULATED_SCALE": "Calculated scale [{}] for the route image.",
+        "RESIZED_ROUTE": "Route image resized with width: [{}], height: [{}].",
+        "STORY_CREATED": "Story image successfully created with filename: [{}].",
+        "CANT_REMOVE_FILES": "Can't remove files with error: [{}]."
+    },
     "bot": {
         "LOG_MESSAGE": "The telegram user with ID [{}] send bot the message: [{}].",
         "LOG_CALLBACK": "The telegram user with ID [{}] send bot the callback: [{}]."

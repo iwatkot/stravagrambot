@@ -1,4 +1,5 @@
 __pycache__/
+.flake8
 .venv/
 content/
 gpx/
@@ -7,3 +8,6 @@ logs/
 static/
 .env
 images/
+templates/fonts
+templates/stories
+.vscode

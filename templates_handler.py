@@ -7,10 +7,12 @@ class Urls(Enum):
     GET_STATS = "https://www.strava.com/api/v3/athletes/{}/stats"
     GET_ACTIVITIES = "https://www.strava.com/api/v3/athlete/activities"
     CREATE_GPX = "https://www.strava.com/api/v3/activities/{}/streams"
-    OAUTH_URL = "http://www.strava.com/oauth/authorize?client_id=13782&"\
-        "response_type=code&redirect_uri=http://stravagram.space/"\
-        "stravagramoauth?telegram_id={}&exchange_token&approval_prompt="\
+    OAUTH_URL = (
+        "http://www.strava.com/oauth/authorize?client_id=13782&"
+        "response_type=code&redirect_uri=http://stravagram.space/"
+        "stravagramoauth?telegram_id={}&exchange_token&approval_prompt="
         "force&scope=read_all,activity:read_all"
+    )
     get_activity = "https://www.strava.com/api/v3/activities/{}"
     get_segment = "https://www.strava.com/api/v3/segments/{}"
     get_starred_segments = "https://www.strava.com/api/v3/segments/starred"
@@ -25,11 +27,13 @@ class Urls(Enum):
 
 class Constants(Enum):
     ABSOLUTE_PATH = os.path.dirname(__file__)
-    DIRS = ['logs', 'gpx', 'images']
+    IMAGE_PATH = os.path.join(ABSOLUTE_PATH, "images")
+    STORIES_TEMPLATES = os.path.join(ABSOLUTE_PATH, "templates", "stories")
+    FONTS_DIR = os.path.join(ABSOLUTE_PATH, "templates", "fonts")
+    DIRS = ["logs", "gpx", "images"]
     SUPPORTED_LANGUAGES = ["en", "ru"]
 
 
 def startup():
     for d in Constants.DIRS.value:
-        os.makedirs(os.path.join(Constants.ABSOLUTE_PATH.value, d),
-                    exist_ok=True)
+        os.makedirs(os.path.join(Constants.ABSOLUTE_PATH.value, d), exist_ok=True)

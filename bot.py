@@ -22,14 +22,15 @@ from flask_server import run_server
 from templates_handler import startup, Constants, Urls
 from api_handler import APICaller
 from log_handler import Logger, get_log_file, LogTemplates
+from image_handler import Stories
 
-logger = Logger('bot')
-TOKEN = config('TOKEN')
-BOT_TEMPLATES = os.path.join(Constants.ABSOLUTE_PATH.value,
-                             "templates/bot_templates.json")
-BUTTON_TEMPLATES = os.path.join(Constants.ABSOLUTE_PATH.value,
-                                "templates/buttons.json")
-ADMIN = int(config('ADMIN'))
+logger = Logger("bot")
+TOKEN = config("TOKEN")
+BOT_TEMPLATES = os.path.join(
+    Constants.ABSOLUTE_PATH.value, "templates/bot_templates.json"
+)
+BUTTON_TEMPLATES = os.path.join(Constants.ABSOLUTE_PATH.value, "templates/buttons.json")
+ADMIN = int(config("ADMIN"))
 
 storage = MemoryStorage()
 bot = Bot(token=TOKEN)
@@ -61,6 +62,8 @@ class MessageModel(BaseModel):
     FOUND: str
     GPX: str
     ACTSEG: str
+    STORY: str
+    NO_STORY: str
     NO_SEGMENTS: str
     SEGMENTS: str
     BUTTON_PRESSED: str
@@ -100,10 +103,7 @@ class ButtonModel(BaseModel):
         return [self.RECENT, self.LAST, self.FIND, self.MENU]
 
     def periods(self):
-        return {
-            self.STATS_ALL: "all",
-            self.STATS_YEAR: "year",
-            self.WEEKAVG: "week"}
+        return {self.STATS_ALL: "all", self.STATS_YEAR: "year", self.WEEKAVG: "week"}
 
 
 class LocaleMModel(BaseModel):
@@ -118,30 +118,37 @@ class LocaleBModel(BaseModel):
 
 message_data = json.load(open(BOT_TEMPLATES, "r", encoding="utf-8"))
 button_data = json.load(open(BUTTON_TEMPLATES, "r", encoding="utf-8"))
-message_model = LocaleMModel(ru=MessageModel(**message_data["ru"]),
-                             en=MessageModel(**message_data["en"]))
-button_model = LocaleBModel(ru=ButtonModel(**button_data["ru"]),
-                            en=ButtonModel(**button_data["en"]))
+message_model = LocaleMModel(
+    ru=MessageModel(**message_data["ru"]), en=MessageModel(**message_data["en"])
+)
+button_model = LocaleBModel(
+    ru=ButtonModel(**button_data["ru"]), en=ButtonModel(**button_data["en"])
+)
 BOT_MESSAGES = message_model.__dict__
 BUTTONS = button_model.__dict__
 
 
 # Commands.
 
+
 @dp.message_handler(commands=["start"])
 async def start_handler(message: types.Message):
     """Handles the /start command."""
     telegram_id, lang, user_name = unpack_message(message)
     await bot.send_message(
-        telegram_id, BOT_MESSAGES[lang].START.format(user_name),
-        parse_mode='MarkdownV2',
-        reply_markup=generate_reply_keyboard(BUTTONS[lang].main_menu()))
+        telegram_id,
+        BOT_MESSAGES[lang].START.format(user_name),
+        parse_mode="MarkdownV2",
+        reply_markup=generate_reply_keyboard(BUTTONS[lang].main_menu()),
+    )
     await asyncio.sleep(3)
-    await bot.send_message(telegram_id, BOT_MESSAGES[lang].TOUR,
-                           parse_mode='MarkdownV2')
+    await bot.send_message(
+        telegram_id, BOT_MESSAGES[lang].TOUR, parse_mode="MarkdownV2"
+    )
 
 
 # Administration commands.
+
 
 @dp.message_handler(commands=["users"])
 async def users_handler(message: types.Message):
@@ -153,9 +160,12 @@ async def users_handler(message: types.Message):
         users = users_session.get_users()
         users_session.disconnect()
         formatted_message = formatter.format_users(users)
-        await bot.send_message(telegram_id, formatted_message,
-                               disable_web_page_preview=True,
-                               parse_mode='MarkdownV2')
+        await bot.send_message(
+            telegram_id,
+            formatted_message,
+            disable_web_page_preview=True,
+            parse_mode="MarkdownV2",
+        )
 
 
 @dp.message_handler(commands=["logs"])
@@ -167,77 +177,78 @@ async def logs_handler(message: types.Message):
         await bot.send_document(telegram_id, log_file)
 
 
-@dp.message_handler(regexp_commands=[r'/webhook?(?P<action>\w+)'])
-async def webhook_handler(message: types.Message,
-                          regexp_command: re.Match[str]):
+@dp.message_handler(regexp_commands=[r"/webhook?(?P<action>\w+)"])
+async def webhook_handler(message: types.Message, regexp_command: re.Match[str]):
     """Handles operations with Strava webhook subscription (subscribe,
     view and delete). Only available for admin user."""
-    action = regexp_command['action']
+    action = regexp_command["action"]
     telegram_id, lang, user_name = unpack_message(message)
     if telegram_id == ADMIN:
         webhook = WebHook()
-        if action == 'subscribe':
+        if action == "subscribe":
             result = webhook.subscribe()
             if result:
                 await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_SUB_GOOD.format(
-                        result))
+                    telegram_id, BOT_MESSAGES[lang].WH_SUB_GOOD.format(result)
+                )
             else:
-                await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_SUB_BAD)
-        elif action == 'view':
+                await bot.send_message(telegram_id, BOT_MESSAGES[lang].WH_SUB_BAD)
+        elif action == "view":
             result = webhook.view()
             if result:
                 await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_VIEW_GOOD.format(
-                        result))
+                    telegram_id, BOT_MESSAGES[lang].WH_VIEW_GOOD.format(result)
+                )
             else:
-                await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_VIEW_BAD)
-        elif action == 'delete':
+                await bot.send_message(telegram_id, BOT_MESSAGES[lang].WH_VIEW_BAD)
+        elif action == "delete":
             webhook.view()
             result = webhook.delete()
             if result:
-                await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_DEL_GOOD)
+                await bot.send_message(telegram_id, BOT_MESSAGES[lang].WH_DEL_GOOD)
             else:
-                await bot.send_message(
-                    telegram_id, BOT_MESSAGES[lang].WH_DEL_BAD)
+                await bot.send_message(telegram_id, BOT_MESSAGES[lang].WH_DEL_BAD)
 
 
 # Non-button functions.
+
 
 async def find_finish(message_text, telegram_id, lang, state):
     """Catches answer for find state and checks if it's correct."""
     try:
         dates = message_text.split()
-        after, before = tuple(map(
-            lambda x: datetime.strptime(x, "%Y-%m-%d").timestamp(), dates))
+        after, before = tuple(
+            map(lambda x: datetime.strptime(x, "%Y-%m-%d").timestamp(), dates)
+        )
     except Exception:
         await bot.send_message(telegram_id, BOT_MESSAGES[lang].WRONG_PERIOD)
         return
     if 0 < before - after < (120 * 24 * 60 * 60):
         await bot.send_message(
-            telegram_id, BOT_MESSAGES[lang].STARTED_SEARCH,
-            parse_mode='MarkdownV2', reply_markup=generate_reply_keyboard(
-                BUTTONS[lang].activities_menu()))
+            telegram_id,
+            BOT_MESSAGES[lang].STARTED_SEARCH,
+            parse_mode="MarkdownV2",
+            reply_markup=generate_reply_keyboard(BUTTONS[lang].activities_menu()),
+        )
         caller = APICaller(telegram_id=telegram_id)
         raw_data = caller.get_activities(before=before, after=after)
         await state.finish()
         if not raw_data:
-            await bot.send_message(
-                telegram_id, BOT_MESSAGES[lang].NO_ACTIVITIES)
+            await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITIES)
         else:
             data = formatter.format_activities(raw_data, lang)
             await bot.send_message(
-                telegram_id, BOT_MESSAGES[lang].FOUND.format(message_text),
+                telegram_id,
+                BOT_MESSAGES[lang].FOUND.format(message_text),
                 reply_markup=generate_inline_keyboard(data),
-                parse_mode='MarkdownV2')
+                parse_mode="MarkdownV2",
+            )
     else:
         await bot.send_message(telegram_id, BOT_MESSAGES[lang].WRONG_PERIOD)
 
 
 # Keyboard generators.
+
 
 def generate_inline_keyboard(inline_buttons: dict):
     inline_keyboard = InlineKeyboardMarkup(resize_keyboard=True)
@@ -256,6 +267,7 @@ def generate_reply_keyboard(reply_buttons: list):
 
 # Menu button handlers.
 
+
 @dp.message_handler(state=None)
 async def menu_handler(message: types.Message):
     telegram_id, lang, user_name = unpack_message(message)
@@ -272,22 +284,19 @@ async def menu_handler(message: types.Message):
         BUTTONS[lang].WEEKAVG: stats_buttons_handler,
         BUTTONS[lang].RECENT: recent_button_handler,
         BUTTONS[lang].LAST: last_button_handler,
-        BUTTONS[lang].FIND: find_button_handler
+        BUTTONS[lang].FIND: find_button_handler,
     }
     if message.text in menu_handler:
         await menu_handler[message.text](message_text, telegram_id, lang)
 
 
-@dp.message_handler(state='*')
+@dp.message_handler(state="*")
 async def menu_state_handler(message: types.Message, state: FSMContext):
     telegram_id, lang, user_name = unpack_message(message)
     message_text = message.text
-    menu_state_handler = {
-        BUTTONS[lang].CANCEL: cancel_button_handler
-    }
+    menu_state_handler = {BUTTONS[lang].CANCEL: cancel_button_handler}
     if message.text in menu_state_handler:
-        await menu_state_handler[message.text](message_text, telegram_id,
-                                               lang, state)
+        await menu_state_handler[message.text](message_text, telegram_id, lang, state)
     else:
         await find_finish(message_text, telegram_id, lang, state)
 
@@ -300,42 +309,45 @@ async def update_menu_buttons(message_text, telegram_id, lang):
     elif message_text == BUTTONS[lang].STATS:
         reply_keyboard = generate_reply_keyboard(BUTTONS[lang].stats_menu())
     elif message_text == BUTTONS[lang].ACTIVITIES:
-        reply_keyboard = generate_reply_keyboard(
-            BUTTONS[lang].activities_menu())
+        reply_keyboard = generate_reply_keyboard(BUTTONS[lang].activities_menu())
 
     await bot.send_message(
-        telegram_id, BOT_MESSAGES[lang].BUTTON_PRESSED.format(message_text),
-        reply_markup=reply_keyboard, parse_mode='MarkdownV2')
+        telegram_id,
+        BOT_MESSAGES[lang].BUTTON_PRESSED.format(message_text),
+        reply_markup=reply_keyboard,
+        parse_mode="MarkdownV2",
+    )
 
 
 async def auth_button_handler(message_text, telegram_id, lang):
     inline_keyboard = InlineKeyboardMarkup(resize_keyboard=True)
     inline_button = InlineKeyboardButton(
-        text='Connect with Strava',
-        url=Urls.OAUTH_URL.value.format(telegram_id))
+        text="Connect with Strava", url=Urls.OAUTH_URL.value.format(telegram_id)
+    )
     inline_keyboard.add(inline_button)
 
-    await bot.send_message(telegram_id, BOT_MESSAGES[lang].AUTH,
-                           parse_mode='MarkdownV2',
-                           reply_markup=inline_keyboard)
+    await bot.send_message(
+        telegram_id,
+        BOT_MESSAGES[lang].AUTH,
+        parse_mode="MarkdownV2",
+        reply_markup=inline_keyboard,
+    )
 
 
 async def starred_segments_button_handler(message_text, telegram_id, lang):
     caller = APICaller(telegram_id)
     segments = caller.raw_data(get_starred_segments=True)
     if not segments:
-        await bot.send_message(
-            telegram_id, BOT_MESSAGES[lang].NO_STARRED_SEG)
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_STARRED_SEG)
         return
 
     inline_buttons = {}
     for segment in segments:
-        inline_buttons.update({
-            f"segment{segment['id']}":
-                f"{segment['name']}"})
+        inline_buttons.update({f"segment{segment['id']}": f"{segment['name']}"})
     inline_keyboard = generate_inline_keyboard(inline_buttons)
-    await bot.send_message(telegram_id, BOT_MESSAGES[lang].STARRED_SEG,
-                           reply_markup=inline_keyboard)
+    await bot.send_message(
+        telegram_id, BOT_MESSAGES[lang].STARRED_SEG, reply_markup=inline_keyboard
+    )
 
 
 async def stats_buttons_handler(message_text, telegram_id, lang):
@@ -344,7 +356,7 @@ async def stats_buttons_handler(message_text, telegram_id, lang):
     raw_data = caller.get_stats()
     if raw_data:
         data = formatter.format_stats(raw_data, period, lang)
-        await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
+        await bot.send_message(telegram_id, data, parse_mode="MarkdownV2")
     else:
         await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_STATS)
 
@@ -354,12 +366,14 @@ async def recent_button_handler(message_text, telegram_id, lang):
     raw_data = caller.get_activities()
     if raw_data:
         data = formatter.format_activities(raw_data, lang)
-        await bot.send_message(telegram_id, BOT_MESSAGES[lang].RECENT,
-                               reply_markup=generate_inline_keyboard(data),
-                               parse_mode='MarkdownV2')
-    else:
         await bot.send_message(
-            telegram_id, BOT_MESSAGES[lang].NO_ACTIVITIES)
+            telegram_id,
+            BOT_MESSAGES[lang].RECENT,
+            reply_markup=generate_inline_keyboard(data),
+            parse_mode="MarkdownV2",
+        )
+    else:
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITIES)
 
 
 async def last_button_handler(message_text, telegram_id, lang):
@@ -367,32 +381,36 @@ async def last_button_handler(message_text, telegram_id, lang):
     activities = caller.get_activities()
     print(len(activities))
     if not activities:
-        await bot.send_message(
-            telegram_id, BOT_MESSAGES[lang].NO_ACTIVITIES)
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITIES)
         return
     last_activity = activities[-1]
-    activity_id = last_activity.get('id')
+    activity_id = last_activity.get("id")
     print(activity_id)
     inline_buttons = {
         f"gpx{activity_id}": BOT_MESSAGES[lang].GPX,
-        f"actseg{activity_id}": BOT_MESSAGES[lang].ACTSEG}
+        f"actseg{activity_id}": BOT_MESSAGES[lang].ACTSEG,
+        f"story{activity_id}": BOT_MESSAGES[lang].STORY,
+    }
     inline_keyboard = generate_inline_keyboard(inline_buttons)
 
     raw_data = caller.raw_data(get_activity=activity_id)
     print(len(raw_data))
     if raw_data:
         data = formatter.format_activity(raw_data, lang)
-        await bot.send_message(telegram_id, data,
-                               reply_markup=inline_keyboard,
-                               parse_mode='MarkdownV2')
+        await bot.send_message(
+            telegram_id, data, reply_markup=inline_keyboard, parse_mode="MarkdownV2"
+        )
     else:
         await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITY)
 
 
 async def find_button_handler(message_text, telegram_id, lang):
     await bot.send_message(
-        telegram_id, BOT_MESSAGES[lang].FIND_INIT, parse_mode='MarkdownV2',
-        reply_markup=generate_reply_keyboard([BUTTONS[lang].CANCEL]))
+        telegram_id,
+        BOT_MESSAGES[lang].FIND_INIT,
+        parse_mode="MarkdownV2",
+        reply_markup=generate_reply_keyboard([BUTTONS[lang].CANCEL]),
+    )
     await Form.find.set()
 
 
@@ -400,37 +418,43 @@ async def cancel_button_handler(message_text, telegram_id, lang, state):
     """Cancelling current state if it's not None."""
     await state.finish()
     await bot.send_message(
-        telegram_id, BOT_MESSAGES[lang].CANCELLED, parse_mode='MarkdownV2',
-        reply_markup=generate_reply_keyboard(BUTTONS[lang].main_menu()))
+        telegram_id,
+        BOT_MESSAGES[lang].CANCELLED,
+        parse_mode="MarkdownV2",
+        reply_markup=generate_reply_keyboard(BUTTONS[lang].main_menu()),
+    )
 
 
 # Callback handlers.
 
-@dp.callback_query_handler(text_contains='activity')
+
+@dp.callback_query_handler(text_contains="activity")
 async def activity_callback(callback_query: types.CallbackQuery):
     telegram_id, lang, user_name = unpack_message(callback_query)
-    activity_id = callback_query.data.split('activity')[1]
+    activity_id = callback_query.data.split("activity")[1]
 
     inline_buttons = {
         f"gpx{activity_id}": BOT_MESSAGES[lang].GPX,
-        f"actseg{activity_id}": BOT_MESSAGES[lang].ACTSEG}
+        f"actseg{activity_id}": BOT_MESSAGES[lang].ACTSEG,
+        f"story{activity_id}": BOT_MESSAGES[lang].STORY,
+    }
     inline_keyboard = generate_inline_keyboard(inline_buttons)
 
     caller = APICaller(telegram_id)
     raw_data = caller.raw_data(get_activity=activity_id)
     if raw_data:
         data = formatter.format_activity(raw_data, lang)
-        await bot.send_message(telegram_id, data,
-                               reply_markup=inline_keyboard,
-                               parse_mode='MarkdownV2')
+        await bot.send_message(
+            telegram_id, data, reply_markup=inline_keyboard, parse_mode="MarkdownV2"
+        )
     else:
         await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITY)
 
 
-@dp.callback_query_handler(text_contains='gpx')
+@dp.callback_query_handler(text_contains="gpx")
 async def gpx_callback(callback_query: types.CallbackQuery):
     telegram_id, lang, user_name = unpack_message(callback_query)
-    activity_id = callback_query.data.split('gpx')[1]
+    activity_id = callback_query.data.split("gpx")[1]
 
     caller = APICaller(telegram_id)
     filepath = caller.create_gpx(activity_id)
@@ -439,45 +463,59 @@ async def gpx_callback(callback_query: types.CallbackQuery):
         file = types.InputFile(filepath)
         await bot.send_document(telegram_id, file)
     else:
-        await bot.send_message(
-            telegram_id, BOT_MESSAGES[lang].BAD_GPX_REQUEST)
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].BAD_GPX_REQUEST)
 
 
-@dp.callback_query_handler(text_contains='actseg')
+@dp.callback_query_handler(text_contains="actseg")
 async def actseg_callback(callback_query: types.CallbackQuery):
     telegram_id, lang, user_name = unpack_message(callback_query)
-    activity_id = callback_query.data.split('actseg')[1]
+    activity_id = callback_query.data.split("actseg")[1]
 
     caller = APICaller(telegram_id)
     raw_data = caller.raw_data(get_activity=activity_id)
 
-    segments = raw_data['segment_efforts']
+    segments = raw_data["segment_efforts"]
     if not segments:
         await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_SEGMENTS)
         return
     inline_buttons = {}
     for segment in segments:
-        inline_buttons.update({
-            f"segment{segment['segment']['id']}":
-                f"{segment['segment']['name']}"})
+        inline_buttons.update(
+            {f"segment{segment['segment']['id']}": f"{segment['segment']['name']}"}
+        )
     inline_keyboard = generate_inline_keyboard(inline_buttons)
-    await bot.send_message(telegram_id, BOT_MESSAGES[lang].SEGMENTS,
-                           reply_markup=inline_keyboard)
+    await bot.send_message(
+        telegram_id, BOT_MESSAGES[lang].SEGMENTS, reply_markup=inline_keyboard
+    )
 
 
-@dp.callback_query_handler(text_contains='segment')
+@dp.callback_query_handler(text_contains="story")
+async def story_callback(callback_query: types.CallbackQuery):
+    telegram_id, lang, user_name = unpack_message(callback_query)
+    activity_id = callback_query.data.split("story")[1]
+    story = Stories(telegram_id, activity_id, lang)
+    story_filepath = story.create_story()
+    if not story_filepath:
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_STORY)
+        return
+    story_file = types.InputFile(story_filepath)
+    await bot.send_document(telegram_id, story_file)
+
+
+@dp.callback_query_handler(text_contains="segment")
 async def segment_callback(callback_query: types.CallbackQuery):
     telegram_id, lang, user_name = unpack_message(callback_query)
-    segment_id = callback_query.data.split('segment')[1]
+    segment_id = callback_query.data.split("segment")[1]
 
     caller = APICaller(telegram_id)
     raw_data = caller.raw_data(get_segment=segment_id)
 
     if raw_data:
         data = formatter.format_segment(raw_data, lang)
-        await bot.send_message(telegram_id, data, parse_mode='MarkdownV2')
+        await bot.send_message(telegram_id, data, parse_mode="MarkdownV2")
     else:
         await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITY)
+
 
 # Message and callbacks unpackers.
 
@@ -486,14 +524,12 @@ def unpack_message(message: dict) -> tuple:
     """Extracting data from message (telegram_id, lang and user_name."""
     telegram_id = message.from_user.id
     lang = message.from_user.language_code
-    lang = lang if lang == 'ru' else 'en'
+    lang = lang if lang == "ru" else "en"
     user_name = message.from_user.first_name
     try:
-        logger.debug(LogTemplates['bot'].LOG_MESSAGE.format(
-            telegram_id, message.text))
+        logger.debug(LogTemplates["bot"].LOG_MESSAGE.format(telegram_id, message.text))
     except AttributeError:
-        logger.debug(LogTemplates['bot'].LOG_CALLBACK.format(
-            telegram_id, message.data))
+        logger.debug(LogTemplates["bot"].LOG_CALLBACK.format(telegram_id, message.data))
     return telegram_id, lang, user_name
 
 

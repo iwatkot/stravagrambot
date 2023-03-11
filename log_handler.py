@@ -6,11 +6,10 @@ import json
 from pydantic import BaseModel
 
 absolute_path = os.path.dirname(__file__)
-os.makedirs(os.path.join(absolute_path, 'logs'), exist_ok=True)
+os.makedirs(os.path.join(absolute_path, "logs"), exist_ok=True)
 LOG_FORMATTER = "%(name)s | %(asctime)s | %(levelname)s | %(message)s"
-LOG_FILE = os.path.join(absolute_path, 'logs/main_log.txt')
-LOG_TEMPLATES_FILE = os.path.join(absolute_path,
-                                  'templates/log_templates.json')
+LOG_FILE = os.path.join(absolute_path, "logs/main_log.txt")
+LOG_TEMPLATES_FILE = os.path.join(absolute_path, "templates/log_templates.json")
 
 
 class DatabaseHandlerModel(BaseModel):
@@ -71,6 +70,25 @@ class FormatHandlerModel(BaseModel):
     NO_GEAR_ERROR: str
 
 
+class ImageHandlerModel(BaseModel):
+    CANT_GET_IMAGE_URL: str
+    CANT_GET_POLYLINE: str
+    SAVED_IMAGE: str
+    SAVED_ROUTE: str
+    PACE_CALCULATED: str
+    SPEED_CALCULATED: str
+    STATS_PREPARED: str
+    TEMPLATE_SELECTED: str
+    HEARTRATE_ADDED: str
+    ACHIEVEMENTS_ADDED: str
+    STATS_ADDED: str
+    CANT_ADD_IMAGE: str
+    CALCULATED_SCALE: str
+    RESIZED_ROUTE: str
+    STORY_CREATED: str
+    CANT_REMOVE_FILES: str
+
+
 class BotModel(BaseModel):
     LOG_MESSAGE: str
     LOG_CALLBACK: str
@@ -83,6 +101,7 @@ class AllTemplates(BaseModel):
     webhook_handler: WebhookHandlerModel
     api_handler: ApiHandlerModel
     format_handler: FormatHandlerModel
+    image_handler: ImageHandlerModel
     bot: BotModel
 
     def __getitem__(self, key):
@@ -94,12 +113,14 @@ LogTemplates = AllTemplates.parse_obj(json.load(open(LOG_TEMPLATES_FILE)))
 
 class Logger(logging.getLoggerClass()):
     """Handles logging to the file and stroudt with timestamps."""
+
     def __init__(self, name: str):
         super().__init__(name)
         self.setLevel(logging.DEBUG)
         self.stdout_handler = logging.StreamHandler(sys.stdout)
         self.file_handler = logging.FileHandler(
-            filename=LOG_FILE, mode='a', encoding='utf-8')
+            filename=LOG_FILE, mode="a", encoding="utf-8"
+        )
         self.fmt = LOG_FORMATTER
         self.stdout_handler.setFormatter(logging.Formatter(LOG_FORMATTER))
         self.file_handler.setFormatter(logging.Formatter(LOG_FORMATTER))
