@@ -69,8 +69,23 @@
         "STORY_CREATED": "Story image successfully created with filename: [{}].",
         "CANT_REMOVE_FILES": "Can't remove files with error: [{}]."
     },
+    "analytics_handler": {
+        "READ_ACTIVITIES": "Readed activities from the API for Telegram ID: [{}].",
+        "RIDE_COUNT": "Generated dictionary for Telegram ID: [{}] with ride count: [{}].",
+        "RUN_COUNT": "Generated dictionary for Telegram ID: [{}] with run count: [{}].",
+        "DAILY_INCREASE": "Calculated daily increase: [{}]."
+    },
     "bot": {
         "LOG_MESSAGE": "The telegram user with ID [{}] send bot the message: [{}].",
-        "LOG_CALLBACK": "The telegram user with ID [{}] send bot the callback: [{}]."
+        "LOG_CALLBACK": "The telegram user with ID [{}] send bot the callback: [{}].",
+        "GPX_SENT": "GPX file successfully sent to the telegram user with ID: [{}].",
+        "GPX_DELETED": "GPX file with path [{}] successfully deleted.",
+        "CANT_DELETE_GPX": "Can't delete GPX file with path [{}].",
+        "STORY_SENT": "Story image successfully sent to the telegram user with ID: [{}].",
+        "STORY_DELETED": "Story image with path [{}] successfully deleted.",
+        "CANT_DELETE_STORY": "Can't delete story image with path [{}].",
+        "FORECAST_SENT": "Forecast image successfully sent to the telegram user with ID: [{}].",
+        "FORECAST_DELETED": "Forecast image with path [{}] successfully deleted.",
+        "CANT_DELETE_FORECAST": "Can't delete forecast image with path [{}]."
     }
 }

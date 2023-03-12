@@ -89,9 +89,25 @@ class ImageHandlerModel(BaseModel):
     CANT_REMOVE_FILES: str
 
 
+class AnalyticsHandlerModel(BaseModel):
+    READ_ACTIVITIES: str
+    RIDE_COUNT: str
+    RUN_COUNT: str
+    DAILY_INCREASE: str
+
+
 class BotModel(BaseModel):
     LOG_MESSAGE: str
     LOG_CALLBACK: str
+    GPX_SENT: str
+    GPX_DELETED: str
+    CANT_DELETE_GPX: str
+    STORY_SENT: str
+    STORY_DELETED: str
+    CANT_DELETE_STORY: str
+    FORECAST_SENT: str
+    FORECAST_DELETED: str
+    CANT_DELETE_FORECAST: str
 
 
 class AllTemplates(BaseModel):
@@ -102,6 +118,7 @@ class AllTemplates(BaseModel):
     api_handler: ApiHandlerModel
     format_handler: FormatHandlerModel
     image_handler: ImageHandlerModel
+    analytics_handler: AnalyticsHandlerModel
     bot: BotModel
 
     def __getitem__(self, key):

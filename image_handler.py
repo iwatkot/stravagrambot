@@ -44,7 +44,14 @@ LOCALE = {
 
 
 class Stories:
-    def __init__(self, telegram_id, activity_id, lang):
+    """Class for creating Instagram stories image from Strava activities.
+    Args:
+        telegram_id (int): user's telegram id
+        activity_id (int): the id of the activity to be processed
+        lang (str): user's language code
+    """
+
+    def __init__(self, telegram_id: int, activity_id: int, lang: str):
         self.telegram_id = telegram_id
         self.activity_id = activity_id
         self.lang = lang
@@ -60,6 +67,7 @@ class Stories:
         self.add_stats()
 
     def create_images(self):
+        """Downloads activity image and route polyline and saves them to the files."""
         image_url = None
         try:
             image_url = self.raw_data["photos"]["primary"]["urls"]["600"]
@@ -98,6 +106,7 @@ class Stories:
             logger.debug(LogTemplates[__name__].SAVED_ROUTE.format(self.route_filepath))
 
     def prepare_stats(self):
+        """Extracts and prepares activity stats for the image."""
         self.name = self.raw_data.get("name")
         date = datetime.strptime(
             self.raw_data.get("start_date_local"), "%Y-%m-%dT%H:%M:%SZ"
@@ -139,6 +148,7 @@ class Stories:
         logger.debug(LogTemplates[__name__].STATS_PREPARED.format(self.activity_id))
 
     def select_template(self):
+        """Selects template for the image depending on the activity type and optional fields."""
         if self.heartrate and self.achievements:
             self.template = os.path.join(
                 Constants.STORIES_TEMPLATES.value, "stories_hr_ac.png"
@@ -158,6 +168,7 @@ class Stories:
         logger.debug(LogTemplates[__name__].TEMPLATE_SELECTED.format(self.template))
 
     def add_stats(self):
+        """Adds stats to the template."""
         self.story_image = Image.open(self.template)
         draw = ImageDraw.Draw(self.story_image)
 
@@ -225,7 +236,12 @@ class Stories:
             )
         logger.debug(LogTemplates[__name__].STATS_ADDED.format(self.activity_id))
 
-    def create_story(self):
+    def create_story(self) -> str:
+        """Prepares and inserts activity image and route map into the template.
+
+        Returns:
+            str: returns the path to the created story image
+        """
         if not self.image_filepath or not self.route_filepath:
             return
 

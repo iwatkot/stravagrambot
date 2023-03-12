@@ -4,6 +4,7 @@
         "PROFILE": "Profile",
         "STATS": "Stats",
         "ACTIVITIES": "Activities",
+        "ANALYTICS": "Analytics",
         "AUTH": "Authenticate",
         "STARRED_SEGMENTS": "Starred segments",
         "STATS_ALL": "Overall stats",
@@ -12,12 +13,14 @@
         "RECENT": "Recent activities",
         "LAST": "Last activity",
         "FIND": "Find activities",
+        "YEAR_FORECAST": "Year forecast",
         "CANCEL": "Cancel"
     },
     "ru": {
         "MENU": "Главное меню",
         "PROFILE": "Профиль",
         "STATS": "Статистика",
+        "ANALYTICS": "Аналитика",
         "ACTIVITIES": "Тренировки",
         "AUTH": "Авторизация",
         "STARRED_SEGMENTS": "Избранные участки",
@@ -27,6 +30,7 @@
         "RECENT": "Недавние тренировки",
         "LAST": "Последняя тренировка",
         "FIND": "Найти тренировки",
+        "YEAR_FORECAST": "Прогноз на год",
         "CANCEL": "Отмена"
     }
 }

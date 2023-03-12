@@ -10,4 +10,5 @@ static/
 images/
 templates/fonts
 templates/stories
+templates/forecasts
 .vscode

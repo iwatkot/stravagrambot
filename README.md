@@ -25,6 +25,7 @@ The `WebHook` class is designed to handle Strava webhook subscriptions. It's als
 Very strange, but Strava API doesn't provide any option to download the GPX file for the activity, so the bot generates it by itself using data streams. The code, which handles GPX generating is copy-pasted from [PhysicsDan's GPXfromStravaAPI](https://github.com/PhysicsDan/GPXfromStravaAPI).
 
 ## Modules
+**analytics_handler** - contains classes for generating analytics based on activities (right now only one for year forecast).<br>
 **api_handler** - handles data receiving from the API using information from database_handler and token_handler<br>
 **bot** - the main script, which handles interaction with telegram user<br>
 **database_handler** - handles operations with database, such as inserting data from the ouath_init() and getting access_tokens for API calls<br>
@@ -48,6 +49,7 @@ The bot will answer admin commands only if the user's Telegram ID is equal to `A
 
 
 ## Changelog
+**2023/03/12** - Added new menu for analytics. Added one feature for this menu: year forecast, which consists of three options (distance, time and elevation).<br>
 **2023/03/12** - Added feature to create images for Instagram stories.<br>
 **2023/03/02** - Fixed bug when no gear in activity caused format_handler to crash.<br> 
 **2023/02/26** - Fixed bug when the bot used refresh token after getting new access token.<br>

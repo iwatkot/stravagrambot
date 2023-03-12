@@ -23,6 +23,7 @@ from templates_handler import startup, Constants, Urls
 from api_handler import APICaller
 from log_handler import Logger, get_log_file, LogTemplates
 from image_handler import Stories
+from analytics_handler import YearForecast
 
 logger = Logger("bot")
 TOKEN = config("TOKEN")
@@ -63,6 +64,11 @@ class MessageModel(BaseModel):
     GPX: str
     ACTSEG: str
     STORY: str
+    FORECAST_DISTANCE: str
+    FORECAST_TIME: str
+    FORECAST_ELEVATION: str
+    CHOOSE_FORECAST: str
+    NO_FORECAST: str
     NO_STORY: str
     NO_SEGMENTS: str
     SEGMENTS: str
@@ -80,6 +86,7 @@ class ButtonModel(BaseModel):
     PROFILE: str
     STATS: str
     ACTIVITIES: str
+    ANALYTICS: str
     AUTH: str
     STARRED_SEGMENTS: str
     STATS_ALL: str
@@ -88,10 +95,11 @@ class ButtonModel(BaseModel):
     RECENT: str
     LAST: str
     FIND: str
+    YEAR_FORECAST: str
     CANCEL: str
 
     def main_menu(self):
-        return [self.PROFILE, self.STATS, self.ACTIVITIES]
+        return [self.PROFILE, self.STATS, self.ACTIVITIES, self.ANALYTICS]
 
     def profile_menu(self):
         return [self.AUTH, self.STARRED_SEGMENTS, self.MENU]
@@ -101,6 +109,9 @@ class ButtonModel(BaseModel):
 
     def activities_menu(self):
         return [self.RECENT, self.LAST, self.FIND, self.MENU]
+
+    def analytics_menu(self):
+        return [self.YEAR_FORECAST, self.MENU]
 
     def periods(self):
         return {self.STATS_ALL: "all", self.STATS_YEAR: "year", self.WEEKAVG: "week"}
@@ -277,6 +288,7 @@ async def menu_handler(message: types.Message):
         BUTTONS[lang].PROFILE: update_menu_buttons,
         BUTTONS[lang].STATS: update_menu_buttons,
         BUTTONS[lang].ACTIVITIES: update_menu_buttons,
+        BUTTONS[lang].ANALYTICS: update_menu_buttons,
         BUTTONS[lang].AUTH: auth_button_handler,
         BUTTONS[lang].STARRED_SEGMENTS: starred_segments_button_handler,
         BUTTONS[lang].STATS_ALL: stats_buttons_handler,
@@ -285,6 +297,7 @@ async def menu_handler(message: types.Message):
         BUTTONS[lang].RECENT: recent_button_handler,
         BUTTONS[lang].LAST: last_button_handler,
         BUTTONS[lang].FIND: find_button_handler,
+        BUTTONS[lang].YEAR_FORECAST: year_forecast_button_handler,
     }
     if message.text in menu_handler:
         await menu_handler[message.text](message_text, telegram_id, lang)
@@ -310,6 +323,8 @@ async def update_menu_buttons(message_text, telegram_id, lang):
         reply_keyboard = generate_reply_keyboard(BUTTONS[lang].stats_menu())
     elif message_text == BUTTONS[lang].ACTIVITIES:
         reply_keyboard = generate_reply_keyboard(BUTTONS[lang].activities_menu())
+    elif message_text == BUTTONS[lang].ANALYTICS:
+        reply_keyboard = generate_reply_keyboard(BUTTONS[lang].analytics_menu())
 
     await bot.send_message(
         telegram_id,
@@ -379,13 +394,11 @@ async def recent_button_handler(message_text, telegram_id, lang):
 async def last_button_handler(message_text, telegram_id, lang):
     caller = APICaller(telegram_id)
     activities = caller.get_activities()
-    print(len(activities))
     if not activities:
         await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_ACTIVITIES)
         return
     last_activity = activities[-1]
     activity_id = last_activity.get("id")
-    print(activity_id)
     inline_buttons = {
         f"gpx{activity_id}": BOT_MESSAGES[lang].GPX,
         f"actseg{activity_id}": BOT_MESSAGES[lang].ACTSEG,
@@ -394,7 +407,6 @@ async def last_button_handler(message_text, telegram_id, lang):
     inline_keyboard = generate_inline_keyboard(inline_buttons)
 
     raw_data = caller.raw_data(get_activity=activity_id)
-    print(len(raw_data))
     if raw_data:
         data = formatter.format_activity(raw_data, lang)
         await bot.send_message(
@@ -412,6 +424,19 @@ async def find_button_handler(message_text, telegram_id, lang):
         reply_markup=generate_reply_keyboard([BUTTONS[lang].CANCEL]),
     )
     await Form.find.set()
+
+
+async def year_forecast_button_handler(message_text, telegram_id, lang):
+    inline_buttons = {
+        "forecast_distances": BOT_MESSAGES[lang].FORECAST_DISTANCE,
+        "forecast_times": BOT_MESSAGES[lang].FORECAST_TIME,
+        "forecast_elevations": BOT_MESSAGES[lang].FORECAST_ELEVATION,
+    }
+    inline_keyboard = generate_inline_keyboard(inline_buttons)
+
+    await bot.send_message(
+        telegram_id, BOT_MESSAGES[lang].CHOOSE_FORECAST, reply_markup=inline_keyboard
+    )
 
 
 async def cancel_button_handler(message_text, telegram_id, lang, state):
@@ -462,8 +487,18 @@ async def gpx_callback(callback_query: types.CallbackQuery):
     if filepath:
         file = types.InputFile(filepath)
         await bot.send_document(telegram_id, file)
+        logger.debug(LogTemplates["bot"].GPX_SENT.format(telegram_id))
     else:
         await bot.send_message(telegram_id, BOT_MESSAGES[lang].BAD_GPX_REQUEST)
+        return
+
+    await asyncio.sleep(60)
+
+    try:
+        os.remove(filepath)
+        logger.debug(LogTemplates["bot"].GPX_DELETED.format(filepath))
+    except FileNotFoundError:
+        logger.error(LogTemplates["bot"].CANT_DELETE_GPX.format(filepath))
 
 
 @dp.callback_query_handler(text_contains="actseg")
@@ -500,6 +535,40 @@ async def story_callback(callback_query: types.CallbackQuery):
         return
     story_file = types.InputFile(story_filepath)
     await bot.send_document(telegram_id, story_file)
+    logger.debug(LogTemplates["bot"].STORY_SENT.format(telegram_id))
+
+    await asyncio.sleep(60)
+
+    try:
+        os.remove(story_filepath)
+        logger.debug(LogTemplates["bot"].STORY_DELETED.format(story_filepath))
+    except FileNotFoundError:
+        logger.error(LogTemplates["bot"].CANT_DELETE_STORY.format(story_filepath))
+
+
+@dp.callback_query_handler(text_contains="forecast_")
+async def forecast_callback(callback_query: types.CallbackQuery):
+    telegram_id, lang, user_name = unpack_message(callback_query)
+    forecast_type = callback_query.data.split("forecast_")[1]
+
+    forecast = YearForecast(telegram_id, lang)
+    forecast_filepath = forecast.create_forecast(forecast_type)
+
+    if not forecast_filepath:
+        await bot.send_message(telegram_id, BOT_MESSAGES[lang].NO_FORECAST)
+        return
+
+    file = types.InputFile(forecast_filepath)
+    await bot.send_photo(telegram_id, file)
+    logger.debug(LogTemplates["bot"].FORECAST_SENT.format(telegram_id))
+
+    await asyncio.sleep(60)
+
+    try:
+        os.remove(forecast_filepath)
+        logger.debug(LogTemplates["bot"].FORECAST_DELETED.format(forecast_filepath))
+    except FileNotFoundError:
+        logger.error(LogTemplates["bot"].CANT_DELETE_FORECAST.format(forecast_filepath))
 
 
 @dp.callback_query_handler(text_contains="segment")

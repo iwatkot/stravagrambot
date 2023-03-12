@@ -29,6 +29,7 @@ class Constants(Enum):
     ABSOLUTE_PATH = os.path.dirname(__file__)
     IMAGE_PATH = os.path.join(ABSOLUTE_PATH, "images")
     STORIES_TEMPLATES = os.path.join(ABSOLUTE_PATH, "templates", "stories")
+    FORECASTS_TEMPLATES = os.path.join(ABSOLUTE_PATH, "templates", "forecasts")
     FONTS_DIR = os.path.join(ABSOLUTE_PATH, "templates", "fonts")
     DIRS = ["logs", "gpx", "images"]
     SUPPORTED_LANGUAGES = ["en", "ru"]
