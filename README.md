@@ -49,6 +49,9 @@ The bot will answer admin commands only if the user's Telegram ID is equal to `A
 
 
 ## Changelog
+**2023/03/13** - Fixed bug, when the bot can't paste activity image to the Instagram stories image if the title image was vertical.<br>
+**2023/03/13** - Fixed bug, when the bot doesn't send Instagram stories image if the activity was missing heart rate data.<br>
+**2023/03/13** - Fixed bug, when telegram users with long Telegram ID can not use OAUth.<br>
 **2023/03/12** - Added new menu for analytics. Added one feature for this menu: year forecast, which consists of three options (distance, time and elevation).<br>
 **2023/03/12** - Added feature to create images for Instagram stories.<br>
 **2023/03/02** - Fixed bug when no gear in activity caused format_handler to crash.<br> 

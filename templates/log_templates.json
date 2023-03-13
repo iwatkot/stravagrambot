@@ -67,7 +67,9 @@
         "CALCULATED_SCALE": "Calculated scale [{}] for the route image.",
         "RESIZED_ROUTE": "Route image resized with width: [{}], height: [{}].",
         "STORY_CREATED": "Story image successfully created with filename: [{}].",
-        "CANT_REMOVE_FILES": "Can't remove files with error: [{}]."
+        "CANT_REMOVE_FILES": "Can't remove files with error: [{}].",
+        "RESIZED_IMAGE": "Image resized with width: [{}], height: [{}].",
+        "CALCULATED_OFFSETS": "Calculated offsets for the image X: [{}], Y: [{}]."
     },
     "analytics_handler": {
         "READ_ACTIVITIES": "Readed activities from the API for Telegram ID: [{}].",

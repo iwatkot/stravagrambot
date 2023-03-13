@@ -13,6 +13,7 @@ from api_handler import APICaller
 from templates_handler import Constants
 from log_handler import Logger, LogTemplates
 
+__name__ = "image_handler"
 logger = Logger(__name__)
 
 
@@ -138,8 +139,12 @@ class Stories:
                 LogTemplates[__name__].SPEED_CALCULATED.format(self.activity_id)
             )
 
-        self.heartrate = str(round(self.raw_data.get("average_heartrate")))
-        self.achievements = str(self.raw_data.get("achievement_count"))
+        self.heartrate = None
+        if self.raw_data.get("has_heartrate"):
+            self.heartrate = str(round(self.raw_data.get("average_heartrate")))
+        self.achievements = self.raw_data.get("achievement_count")
+        if self.achievements:
+            self.achievements = str(self.achievements)
 
         self.distance += LOCALE[self.lang]["distance"]
         if self.type != "Run":
@@ -247,7 +252,28 @@ class Stories:
 
         try:
             image = Image.open(self.image_filepath)
-            self.story_image.paste(image, (156, 672, 924, 1248))
+
+            (x1, y1, x2, y2) = (156, 672, 924, 1248)
+
+            image.thumbnail((768, 576))
+
+            width, height = image.size
+
+            logger.debug(LogTemplates[__name__].RESIZED_IMAGE.format(width, height))
+
+            x_offset = int((768 - width) / 2)
+            x1 += x_offset
+            x2 -= x_offset
+
+            y_offset = int((576 - height) / 2)
+            y1 += y_offset
+            y2 -= y_offset
+
+            logger.debug(
+                LogTemplates[__name__].CALCULATED_OFFSETS.format(x_offset, y_offset)
+            )
+
+            self.story_image.paste(image, ((x1, y1, x2, y2)))
         except Exception as error:
             logger.error(LogTemplates[__name__].CANT_ADD_IMAGE.format(error))
 

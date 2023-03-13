@@ -87,6 +87,8 @@ class ImageHandlerModel(BaseModel):
     RESIZED_ROUTE: str
     STORY_CREATED: str
     CANT_REMOVE_FILES: str
+    RESIZED_IMAGE: str
+    CALCULATED_OFFSETS: str
 
 
 class AnalyticsHandlerModel(BaseModel):
