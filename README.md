@@ -1,7 +1,5 @@
 <a href="https://codeclimate.com/github/iwatkot/stravagrambot/maintainability"><img src="https://api.codeclimate.com/v1/badges/f332b498552ba5752255/maintainability" /></a>
 
-# In development now
-
 ## How and why
 This telegram bot is built on `aiogram` library and uses **Strava API** to help athletes get data from their Strava accounts via Telegram bot.<br>
 The bot uses `PostgreSQL` to store data and operates with it through the `SQLAlchemy`. The access data in the database acquiring from the Flask web server through the OAuth process.
