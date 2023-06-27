@@ -1,14 +1,9 @@
 __pycache__/
 .flake8
 .venv/
-content/
 gpx/
 .git/
 logs/
-static/
 .env
 images/
-templates/fonts
-templates/stories
-templates/forecasts
-.vscode
+.DS_Store

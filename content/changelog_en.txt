@@ -1,0 +1,13 @@
+2023/03/13 Fixed bug, when the bot can't paste activity image to the Instagram stories image if the title image was vertical.
+2023/03/13 Fixed bug, when the bot doesn't send Instagram stories image if activity was missing heart rate data.
+2023/03/13 Fixed bug, when telegram users with long Telegram ID can not use OAUth.
+2023/03/12 Added new analytics menu. Right now it contains only one feature with year forecast.
+2023/03/12 Added a new feature for creating images for Instagram stories.
+2023/03/02 Fixed bug, when the bot doesn't answer if there were no gear data in activity.
+2023-02-26 Fixed bug, which caused some buttons to work only after a second click.
+2023-02-26 The is fully built on a menu now.
+2023-02-25 Removed all /commands and moved into inline buttons. 
+2023-01-30 Added average speed and pace to all stats commands.
+2023-01-29 Added idle statistics to all stat commands (/statsall, /statsyear, /weekavg). Added /starredsegments command to check your your starred segments on Strava.
+2023-01-27 Added segments info to the activity message. Now you can check the segments right from your activity.
+2023-01-26 Added locale for website and /find, /recent commands. Fixed the bug with /stats commands, when the stats wasn't appear correctly (or at all).

@@ -1,0 +1,13 @@
+StravaGram is a Telegram bot, which uses Strava API to access your training data. 
+You can use the bot to check your statistics, activities, segments, gear and to download activities GPX files. 
+At first you need to provide the bot access to your Strava account with secure OAuth authentification and then you can use all commands to view your data.
+List of commands:
+/statsall - shows your overall stats from Strava
+/statsyear - shows your Strava stats in the current year
+/weekavg - shows average stats per week in the current year
+/recent - shows the list with recent activities (60 days)
+/find - lets you search activites in the specified period of time
+/starredsegments - shows the list of your starred segments on Strava
+/activity{id} - shows detailed information about activity, including gear and segments
+/segment{id} - shows detailed information about segment
+/gear{id} - shows current gear distance
